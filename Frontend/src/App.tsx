@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import MarqueeBar from './components/MarqueeBar'
+import React, { useState, useEffect } from 'react'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import TopBar from './components/TopBar'
 import StatusBar from './components/StatusBar'
-import Landing from './components/Landing'
+import { LandingPage } from './pages/Landing/LandingPage'
 import LiveFeed from './components/LiveFeed'
 import Detection from './components/Detection'
 import ModelGuard from './components/ModelGuard'
@@ -13,61 +13,42 @@ import LogInputModal from './components/LogInputModal'
 import { NAV_ITEMS, ViewId } from './data'
 import { SessionProvider } from './context/SessionContext'
 
-function AppContent() {
-  const [activeView, setActiveView] = useState<ViewId | null>(null)
-  const [hasOpenedModule, setHasOpenedModule] = useState(false)
-  const [landingExiting, setLandingExiting] = useState(false)
-  const [landingHidden, setLandingHidden] = useState(false)
-  const [shellVisible, setShellVisible] = useState(false)
+function ConsoleWorkspace() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const initialView = ((location.state as any)?.view as ViewId) || 'feed'
+  const [activeView, setActiveView] = useState<ViewId>(initialView)
 
-  const pillLabel = activeView ? NAV_ITEMS.find((n) => n.view === activeView)?.label ?? 'Explore' : 'Explore'
+  useEffect(() => {
+    if ((location.state as any)?.view) {
+      setActiveView((location.state as any).view)
+    }
+  }, [location.state])
+
+  const pillLabel = NAV_ITEMS.find((n) => n.view === activeView)?.label ?? 'Explore'
 
   const openView = (view: ViewId) => {
     setActiveView(view)
-
-    if (!hasOpenedModule) {
-      setHasOpenedModule(true)
-      setLandingExiting(true)
-      setTimeout(() => {
-        setLandingHidden(true)
-        setShellVisible(true)
-        setTimeout(() => {
-          const item = document.querySelector(`.accordion-item[data-view="${view}"]`)
-          if (item) {
-            const y = item.getBoundingClientRect().top + window.scrollY - 104
-            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
-          }
-        }, 0)
-      }, 430)
-    } else {
-      setTimeout(() => {
-        const item = document.querySelector(`.accordion-item[data-view="${view}"]`)
-        if (item) {
-          const y = item.getBoundingClientRect().top + window.scrollY - 104
-          window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
-        }
-      }, 0)
-    }
+    setTimeout(() => {
+      const item = document.querySelector(`.accordion-item[data-view="${view}"]`)
+      if (item) {
+        const y = item.getBoundingClientRect().top + window.scrollY - 104
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' })
+      }
+    }, 50)
   }
 
   const goHome = () => {
-    setHasOpenedModule(false)
-    setActiveView(null)
-    setShellVisible(false)
-    setLandingExiting(false)
-    setLandingHidden(false)
+    navigate('/')
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
-    <>
-      <MarqueeBar />
+    <div className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col relative" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
       <TopBar activeView={activeView} pillLabel={pillLabel} onSelect={openView} onHome={goHome} />
       <StatusBar />
-      <main>
-        <Landing exiting={landingExiting} hidden={landingHidden} onOpen={openView} />
-
-        <div className={'accordion view-shell' + (shellVisible ? ' visible' : '')} id="accordion">
+      <main className="w-full max-w-full overflow-x-hidden flex-1" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+        <div className="accordion view-shell visible w-full max-w-full overflow-x-hidden" id="accordion">
           {NAV_ITEMS.map((item) => (
             <div
               key={item.view}
@@ -85,7 +66,26 @@ function AppContent() {
       {/* Global Interactive Overlays */}
       <ProcessVisualizer />
       <LogInputModal />
-    </>
+    </div>
+  )
+}
+
+function AppContent() {
+  const navigate = useNavigate()
+
+  const handleNext = (view?: string) => {
+    const targetView = (view as ViewId) || 'feed'
+    navigate('/console', { state: { view: targetView } })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  return (
+    <Routes>
+      <Route path="/" element={<LandingPage onNext={handleNext} />} />
+      <Route path="/console" element={<ConsoleWorkspace />} />
+      <Route path="/app" element={<ConsoleWorkspace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   )
 }
 

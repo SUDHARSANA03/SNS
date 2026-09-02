@@ -74,6 +74,19 @@ export default function TopBar({ activeView, pillLabel, onSelect, onHome }: Prop
         </nav>
 
         <div className="topbar-right-actions">
+          <button 
+            className="topbar-upload-btn" 
+            onClick={onHome}
+            style={{ 
+              background: 'rgba(199, 125, 255, 0.12)', 
+              borderColor: 'rgba(199, 125, 255, 0.4)', 
+              color: '#C77DFF',
+              fontWeight: 600 
+            }}
+          >
+            <span>← Landing Page</span>
+          </button>
+
           <button className="topbar-upload-btn" onClick={() => openLogModal('upload')}>
             <span>📥 Ingest Log</span>
           </button>
