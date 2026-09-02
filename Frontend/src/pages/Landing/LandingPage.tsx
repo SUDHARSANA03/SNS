@@ -45,29 +45,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  // Rummy-style card shuffle and scroll split state
+  const stackRef = useRef<HTMLDivElement>(null);
   const [isSplit, setIsSplit] = useState(false);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const stackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const updateCardSplit = () => {
+    let ticking = false;
+    const updateSplit = () => {
+      ticking = false;
       if (!stackRef.current) return;
       const rect = stackRef.current.getBoundingClientRect();
-      setIsSplit(rect.top < window.innerHeight * 0.82);
+      setIsSplit(rect.top < window.innerHeight * 0.78);
     };
-    window.addEventListener('scroll', updateCardSplit, { passive: true });
-    updateCardSplit();
-    return () => window.removeEventListener('scroll', updateCardSplit);
-  }, []);
 
-  const cardDetails = [
-    { view: 'feed', kicker: '01 / LIVE FEED', title: 'Live Signals', desc: 'Watch raw system activity as it happens. Monitor service health, request flow, latency changes and emerging signals in real time.' },
-    { view: 'detect', kicker: '02 / DETECTION', title: 'Threat Detection', desc: 'Separate real incidents from noisy events using anomaly signals, severity and confidence before opening an investigation.' },
-    { view: 'guard', kicker: '03 / MODEL GUARD', title: 'Model Integrity', desc: 'Check evidence before accepting model output. Review model trust, grounding and verification signals.' },
-    { view: 'chain', kicker: '04 / TIMECHAIN', title: 'Event Chain', desc: 'Trace every step from the first signal through detection and resolution, with evidence attached to each event.' },
-    { view: 'profile', kicker: '05 / PROFILE', title: 'Investigation Hub', desc: 'Review investigation sessions, account activity and response history from one place.' },
-  ];
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateSplit);
+      }
+    }, { passive: true });
+    updateSplit();
+    return () => window.removeEventListener('scroll', updateSplit);
+  }, []);
 
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current) return;
@@ -88,18 +87,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   return (
     <div className="min-h-screen bg-[#0A0810] text-[#F5F1FA] flex flex-col selection:bg-[#C77DFF]/25 selection:text-white relative font-serif-luxury overflow-x-hidden">
       
-      {/* MARQUEE STRIP AT TOP */}
-      <div className="marquee-bar">
-        <div className="marquee-track">
-          <span>18 services connected</span>
-          <span>NVIDIA Nemotron 3 Model Guard Active</span>
-          <span>FastAPI Log Collector Streaming Live</span>
-          <span>18 services connected</span>
-          <span>NVIDIA Nemotron 3 Model Guard Active</span>
-          <span>FastAPI Log Collector Streaming Live</span>
-        </div>
-      </div>
-
       {/* Cinematic Canvas Background (Obsidian & Electric Violet) */}
       <InteractiveBackground />
 
@@ -266,118 +253,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           </motion.div>
 
         </div>
-
-        {/* RUMMY-STYLE CARD STACK FEATURE TRACK */}
-        <div className="w-full max-w-6xl mx-auto px-4 py-8 relative z-20">
-          <div 
-            ref={stackRef}
-            className={`incident-card-stack ${isSplit ? 'cards-split' : ''} ${selectedCard !== null ? 'has-selection' : ''}`}
-          >
-            {/* Card 1 */}
-            <article 
-              className={`feature-card incident-card card-live ${selectedCard === 0 ? 'is-selected' : ''}`}
-              style={{ '--r': '-7deg', '--d': '0s' } as any}
-              onClick={() => setSelectedCard(selectedCard === 0 ? null : 0)}
-            >
-              <div className="card-visual terminal-visual">
-                <div className="visual-top"><span className="mini-dot"></span><span className="mini-dot"></span><span className="mini-dot"></span><b>LIVE STREAM</b></div>
-                <div className="terminal-lines">
-                  <span><i></i> api-gateway <em>200</em></span>
-                  <span><i></i> auth-service <em>200</em></span>
-                  <span className="hot"><i></i> inference <em>LATENCY +42%</em></span>
-                  <span><i></i> worker-07 <em>RUNNING</em></span>
-                </div>
-              </div>
-              <div className="feature-meta"><span>01 / LIVE FEED</span><small>● ACTIVE</small></div>
-              <h3>Live Signals</h3>
-              <p>Watch raw system activity as it happens.</p>
-            </article>
-
-            {/* Card 2 */}
-            <article 
-              className={`feature-card incident-card card-detect ${selectedCard === 1 ? 'is-selected' : ''}`}
-              style={{ '--r': '-3deg', '--d': '.12s' } as any}
-              onClick={() => setSelectedCard(selectedCard === 1 ? null : 1)}
-            >
-              <div className="card-visual detection-visual">
-                <div className="scan-ring"><span></span></div>
-                <div className="detect-core">!</div>
-                <div className="signal signal-a"></div><div className="signal signal-b"></div><div className="signal signal-c"></div>
-                <strong>ANOMALY</strong>
-                <small>confidence 94.8%</small>
-              </div>
-              <div className="feature-meta"><span>02 / DETECTION</span><small>HIGH</small></div>
-              <h3>Threat Detection</h3>
-              <p>Separate real incidents from noisy events.</p>
-            </article>
-
-            {/* Card 3 */}
-            <article 
-              className={`feature-card incident-card card-guard ${selectedCard === 2 ? 'is-selected' : ''}`}
-              style={{ '--r': '2deg', '--d': '.24s' } as any}
-              onClick={() => setSelectedCard(selectedCard === 2 ? null : 2)}
-            >
-              <div className="card-visual guard-visual">
-                <div className="shield-shape">✓</div>
-                <div className="guard-meter"><span></span></div>
-                <div className="guard-label"><b>MODEL TRUST</b><em>97%</em></div>
-                <div className="guard-chip">GROUNDED</div>
-              </div>
-              <div className="feature-meta"><span>03 / MODEL GUARD</span><small>VERIFIED</small></div>
-              <h3>Model Integrity</h3>
-              <p>Check evidence before accepting model output.</p>
-            </article>
-
-            {/* Card 4 */}
-            <article 
-              className={`feature-card incident-card card-chain ${selectedCard === 3 ? 'is-selected' : ''}`}
-              style={{ '--r': '4deg', '--d': '.36s' } as any}
-              onClick={() => setSelectedCard(selectedCard === 3 ? null : 3)}
-            >
-              <div className="card-visual chain-visual">
-                <div className="chain-line"></div>
-                <div className="chain-node n1"><b>01</b><span>signal</span></div>
-                <div className="chain-node n2"><b>02</b><span>detect</span></div>
-                <div className="chain-node n3"><b>03</b><span>resolve</span></div>
-              </div>
-              <div className="feature-meta"><span>04 / TIMECHAIN</span><small>TRACE</small></div>
-              <h3>Event Chain</h3>
-              <p>Trace every step from signal to resolution.</p>
-            </article>
-
-            {/* Card 5 */}
-            <article 
-              className={`feature-card incident-card card-profile ${selectedCard === 4 ? 'is-selected' : ''}`}
-              style={{ '--r': '7deg', '--d': '.48s' } as any}
-              onClick={() => setSelectedCard(selectedCard === 4 ? null : 4)}
-            >
-              <div className="card-visual profile-visual">
-                <div className="profile-orbit"><span></span><span></span></div>
-                <div className="profile-avatar">AI</div>
-                <div className="profile-bars"><i></i><i></i><i></i></div>
-              </div>
-              <div className="feature-meta"><span>05 / PROFILE</span><small>HISTORY</small></div>
-              <h3>Investigation Hub</h3>
-              <p>Review sessions, activity and response history.</p>
-            </article>
-          </div>
-
-          {/* CARD DETAIL INTERACTIVE PANEL */}
-          {selectedCard !== null && (
-            <div className="card-detail-panel visible">
-              <button className="detail-close" onClick={() => setSelectedCard(null)}>×</button>
-              <div className="detail-kicker">{cardDetails[selectedCard].kicker}</div>
-              <h4>{cardDetails[selectedCard].title}</h4>
-              <p>{cardDetails[selectedCard].desc}</p>
-              <button 
-                onClick={() => onNext && onNext(cardDetails[selectedCard].view)}
-                className="px-5 py-2 rounded-xl bg-[#C77DFF] text-black font-mono font-bold text-xs hover:bg-[#E879F9] transition-all cursor-pointer shadow-[0_0_15px_rgba(199,125,255,0.4)]"
-              >
-                Launch {cardDetails[selectedCard].title} Module →
-              </button>
-            </div>
-          )}
-        </div>
       </section>
 
       {/* ═══════════════════════════════════════════════ ROBOT / INTELLIGENCE CORE ═══════════════════════════════════════════════ */}
@@ -463,7 +338,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
 
       {/* ═══════════════════════════════════════════════ STEPS / TRIAGE PIPELINE ═══════════════════════════════════════════════ */}
       <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60 overflow-hidden">
-        <div className="max-w-6xl mx-auto space-y-16 relative">
+        <div className="max-w-6xl mx-auto space-y-12 relative">
 
           <div className="text-center space-y-4">
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
@@ -473,62 +348,43 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <p className="text-neutral-400 text-base font-sans font-light">Four automated steps from raw log ingest to incident resolution</p>
           </div>
 
-          {/* GLOWING PIPELINE CONNECTOR BEAM BEHIND CARDS */}
-          <div className="absolute top-[58%] left-8 right-8 h-[2px] bg-gradient-to-r from-[#C77DFF]/10 via-[#C77DFF]/50 to-[#E879F9]/10 pointer-events-none hidden lg:block -translate-y-1/2 z-0 shadow-[0_0_15px_#C77DFF]" />
-
-          {/* STAGGERED SCROLL REVEAL CARDS (All-in-one sequential animation) */}
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: {
-                  staggerChildren: 0.18,
-                  delayChildren: 0.1,
-                },
-              },
-            }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10"
+          {/* RUMMY SHUFFLE & SCROLL SPLIT FAN-OUT STACK */}
+          <div 
+            ref={stackRef}
+            className={`triage-card-stack ${isSplit ? 'cards-split' : ''} ${selectedCard !== null ? 'has-selection' : ''}`}
           >
             {[
-              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'feed' },
-              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'detect' },
-              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'guard' },
-              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'chain' },
+              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', rot: '-6deg', delay: '0s', view: 'feed' },
+              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', rot: '-2deg', delay: '0.12s', view: 'detect' },
+              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', rot: '2deg', delay: '0.24s', view: 'guard' },
+              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', rot: '6deg', delay: '0.36s', view: 'chain' },
             ].map((s, idx) => (
-              <motion.div 
+              <div 
                 key={idx} 
-                variants={{
-                  hidden: { opacity: 0, y: 45, scale: 0.94 },
-                  visible: {
-                    opacity: 1,
-                    y: 0,
-                    scale: 1,
-                    transition: {
-                      type: 'spring',
-                      stiffness: 85,
-                      damping: 14,
-                    },
-                  },
+                style={{ '--r': s.rot, '--d': s.delay } as React.CSSProperties}
+                className={`triage-card p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/95 backdrop-blur-md relative group hover:border-[#C77DFF]/70 shadow-[0_12px_35px_rgba(0,0,0,0.5)] ${selectedCard === idx ? 'is-selected' : ''}`}
+                onClick={() => {
+                  if (selectedCard === idx) {
+                    setSelectedCard(null);
+                    if (onNext) onNext(s.view);
+                  } else {
+                    setSelectedCard(idx);
+                  }
                 }}
-                className="p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md relative group hover:border-[#C77DFF]/60 hover:-translate-y-2 transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_40px_rgba(199,125,255,0.25)]"
-                onClick={() => onNext && onNext(s.view)}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-4xl font-bold font-mono text-neutral-600 group-hover:text-[#C77DFF] transition-colors duration-500">{s.step}</span>
-                  <div className={`p-2.5 rounded-xl border ${s.iconBg} group-hover:scale-110 transition-transform duration-300`}>{s.icon}</div>
+                  <span className="text-4xl font-bold font-mono text-neutral-500 group-hover:text-[#C77DFF] transition-colors duration-300">{s.step}</span>
+                  <div className="p-2.5 rounded-xl border bg-[#C77DFF]/15 border-[#C77DFF]/30 group-hover:scale-110 transition-transform duration-300">{s.icon}</div>
                 </div>
                 <h4 className="font-bold text-white text-base font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{s.title}</h4>
                 <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{s.desc}</p>
-                <div className="text-[11px] font-mono text-[#C77DFF] pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-semibold flex items-center gap-1">
-                  Explore Step {s.step} →
+                <div className="text-[11px] font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">
+                  {selectedCard === idx ? 'Open module →' : 'Click to inspect →'}
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
+
         </div>
       </section>
 
