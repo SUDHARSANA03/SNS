@@ -112,25 +112,25 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           {/* LEFT SIDE (60%) */}
           <div className="lg:col-span-7 flex flex-col justify-start space-y-6 z-20 pt-2 sm:pt-3">
             
-            {/* Pill Badge */}
+            {/* Eyebrow Badge (HTML introDrop style) */}
             <motion.div 
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              className="inline-flex self-start items-center gap-2 px-4 py-1.5 rounded-full bg-black/80 border border-[#C77DFF]/40 text-xs text-[#C77DFF] shadow-[0_0_12px_rgba(199,125,255,0.25)] backdrop-blur-md"
+              initial={{ opacity: 0, y: -20, scale: 0.92, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+              transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
+              className="inline-flex self-start items-center gap-2.5 px-4 py-1.5 rounded-full bg-[#15111F]/80 border border-[#3A2E52]/80 text-xs text-[#C77DFF] shadow-[0_0_12px_rgba(199,125,255,0.25)] backdrop-blur-md font-mono"
             >
-              <Sparkles className="w-3.5 h-3.5 text-[#E879F9] animate-pulse" />
-              <span className="font-semibold font-sans tracking-widest uppercase text-[10px]">
+              <span className="w-2 h-2 rounded-full bg-[#34D399] shadow-[0_0_8px_#34D399] animate-pulse" />
+              <span className="font-semibold tracking-wider text-[11px] uppercase">
                 INCIDENT AI · REAL-TIME ANOMALY & ROOT-CAUSE ANALYSIS
               </span>
             </motion.div>
 
-            {/* Title - Single Line: INCIDENT AI (Smooth Cinematic Entry) */}
+            {/* Title - Single Line: INCIDENT AI (HTML introTitle ascending scale blur entry) */}
             <div className="py-1 w-full overflow-visible">
               <motion.h1 
-                initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
-                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                initial={{ opacity: 0, y: 48, scale: 0.92, filter: 'blur(16px)' }}
+                animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+                transition={{ duration: 1.05, ease: [0.16, 1, 0.3, 1], delay: 0.08 }}
                 className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-none whitespace-nowrap m-0 flex items-center gap-3 sm:gap-4"
               >
                 <span className="animated-title-gradient drop-shadow-[0_0_35px_rgba(245,241,250,0.35)]">
@@ -142,11 +142,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </motion.h1>
             </div>
 
-            {/* Paragraph 1 - Clean text-left alignment to eliminate word gaps */}
+            {/* Paragraph 1 - Clean text-left alignment (HTML introFade style) */}
             <motion.p 
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
+              transition={{ duration: 0.8, delay: 0.35, ease: "easeOut" }}
               className="text-neutral-200 text-base sm:text-lg leading-relaxed font-sans font-normal text-left max-w-2xl"
             >
               Incident AI is an intelligent monitoring system that continuously analyzes application and infrastructure logs to detect anomalies, errors, and potential incidents in real time. Using AI-driven pattern recognition, it can identify critical issues, correlate events across multiple systems, reduce alert noise, and provide actionable insights to help teams diagnose and resolve incidents faster.
