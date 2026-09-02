@@ -45,6 +45,30 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+  // Rummy-style card shuffle and scroll split state
+  const [isSplit, setIsSplit] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateCardSplit = () => {
+      if (!stackRef.current) return;
+      const rect = stackRef.current.getBoundingClientRect();
+      setIsSplit(rect.top < window.innerHeight * 0.82);
+    };
+    window.addEventListener('scroll', updateCardSplit, { passive: true });
+    updateCardSplit();
+    return () => window.removeEventListener('scroll', updateCardSplit);
+  }, []);
+
+  const cardDetails = [
+    { view: 'feed', kicker: '01 / LIVE FEED', title: 'Live Signals', desc: 'Watch raw system activity as it happens. Monitor service health, request flow, latency changes and emerging signals in real time.' },
+    { view: 'detect', kicker: '02 / DETECTION', title: 'Threat Detection', desc: 'Separate real incidents from noisy events using anomaly signals, severity and confidence before opening an investigation.' },
+    { view: 'guard', kicker: '03 / MODEL GUARD', title: 'Model Integrity', desc: 'Check evidence before accepting model output. Review model trust, grounding and verification signals.' },
+    { view: 'chain', kicker: '04 / TIMECHAIN', title: 'Event Chain', desc: 'Trace every step from the first signal through detection and resolution, with evidence attached to each event.' },
+    { view: 'profile', kicker: '05 / PROFILE', title: 'Investigation Hub', desc: 'Review investigation sessions, account activity and response history from one place.' },
+  ];
+
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current) return;
     const rect = buttonRef.current.getBoundingClientRect();
@@ -64,6 +88,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   return (
     <div className="min-h-screen bg-[#0A0810] text-[#F5F1FA] flex flex-col selection:bg-[#C77DFF]/25 selection:text-white relative font-serif-luxury overflow-x-hidden">
       
+      {/* MARQUEE STRIP AT TOP */}
+      <div className="marquee-bar">
+        <div className="marquee-track">
+          <span>18 services connected</span>
+          <span>NVIDIA Nemotron 3 Model Guard Active</span>
+          <span>FastAPI Log Collector Streaming Live</span>
+          <span>18 services connected</span>
+          <span>NVIDIA Nemotron 3 Model Guard Active</span>
+          <span>FastAPI Log Collector Streaming Live</span>
+        </div>
+      </div>
+
       {/* Cinematic Canvas Background (Obsidian & Electric Violet) */}
       <InteractiveBackground />
 
@@ -229,6 +265,118 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <RobotSection />
           </motion.div>
 
+        </div>
+
+        {/* RUMMY-STYLE CARD STACK FEATURE TRACK */}
+        <div className="w-full max-w-6xl mx-auto px-4 py-8 relative z-20">
+          <div 
+            ref={stackRef}
+            className={`incident-card-stack ${isSplit ? 'cards-split' : ''} ${selectedCard !== null ? 'has-selection' : ''}`}
+          >
+            {/* Card 1 */}
+            <article 
+              className={`feature-card incident-card card-live ${selectedCard === 0 ? 'is-selected' : ''}`}
+              style={{ '--r': '-7deg', '--d': '0s' } as any}
+              onClick={() => setSelectedCard(selectedCard === 0 ? null : 0)}
+            >
+              <div className="card-visual terminal-visual">
+                <div className="visual-top"><span className="mini-dot"></span><span className="mini-dot"></span><span className="mini-dot"></span><b>LIVE STREAM</b></div>
+                <div className="terminal-lines">
+                  <span><i></i> api-gateway <em>200</em></span>
+                  <span><i></i> auth-service <em>200</em></span>
+                  <span className="hot"><i></i> inference <em>LATENCY +42%</em></span>
+                  <span><i></i> worker-07 <em>RUNNING</em></span>
+                </div>
+              </div>
+              <div className="feature-meta"><span>01 / LIVE FEED</span><small>● ACTIVE</small></div>
+              <h3>Live Signals</h3>
+              <p>Watch raw system activity as it happens.</p>
+            </article>
+
+            {/* Card 2 */}
+            <article 
+              className={`feature-card incident-card card-detect ${selectedCard === 1 ? 'is-selected' : ''}`}
+              style={{ '--r': '-3deg', '--d': '.12s' } as any}
+              onClick={() => setSelectedCard(selectedCard === 1 ? null : 1)}
+            >
+              <div className="card-visual detection-visual">
+                <div className="scan-ring"><span></span></div>
+                <div className="detect-core">!</div>
+                <div className="signal signal-a"></div><div className="signal signal-b"></div><div className="signal signal-c"></div>
+                <strong>ANOMALY</strong>
+                <small>confidence 94.8%</small>
+              </div>
+              <div className="feature-meta"><span>02 / DETECTION</span><small>HIGH</small></div>
+              <h3>Threat Detection</h3>
+              <p>Separate real incidents from noisy events.</p>
+            </article>
+
+            {/* Card 3 */}
+            <article 
+              className={`feature-card incident-card card-guard ${selectedCard === 2 ? 'is-selected' : ''}`}
+              style={{ '--r': '2deg', '--d': '.24s' } as any}
+              onClick={() => setSelectedCard(selectedCard === 2 ? null : 2)}
+            >
+              <div className="card-visual guard-visual">
+                <div className="shield-shape">✓</div>
+                <div className="guard-meter"><span></span></div>
+                <div className="guard-label"><b>MODEL TRUST</b><em>97%</em></div>
+                <div className="guard-chip">GROUNDED</div>
+              </div>
+              <div className="feature-meta"><span>03 / MODEL GUARD</span><small>VERIFIED</small></div>
+              <h3>Model Integrity</h3>
+              <p>Check evidence before accepting model output.</p>
+            </article>
+
+            {/* Card 4 */}
+            <article 
+              className={`feature-card incident-card card-chain ${selectedCard === 3 ? 'is-selected' : ''}`}
+              style={{ '--r': '4deg', '--d': '.36s' } as any}
+              onClick={() => setSelectedCard(selectedCard === 3 ? null : 3)}
+            >
+              <div className="card-visual chain-visual">
+                <div className="chain-line"></div>
+                <div className="chain-node n1"><b>01</b><span>signal</span></div>
+                <div className="chain-node n2"><b>02</b><span>detect</span></div>
+                <div className="chain-node n3"><b>03</b><span>resolve</span></div>
+              </div>
+              <div className="feature-meta"><span>04 / TIMECHAIN</span><small>TRACE</small></div>
+              <h3>Event Chain</h3>
+              <p>Trace every step from signal to resolution.</p>
+            </article>
+
+            {/* Card 5 */}
+            <article 
+              className={`feature-card incident-card card-profile ${selectedCard === 4 ? 'is-selected' : ''}`}
+              style={{ '--r': '7deg', '--d': '.48s' } as any}
+              onClick={() => setSelectedCard(selectedCard === 4 ? null : 4)}
+            >
+              <div className="card-visual profile-visual">
+                <div className="profile-orbit"><span></span><span></span></div>
+                <div className="profile-avatar">AI</div>
+                <div className="profile-bars"><i></i><i></i><i></i></div>
+              </div>
+              <div className="feature-meta"><span>05 / PROFILE</span><small>HISTORY</small></div>
+              <h3>Investigation Hub</h3>
+              <p>Review sessions, activity and response history.</p>
+            </article>
+          </div>
+
+          {/* CARD DETAIL INTERACTIVE PANEL */}
+          {selectedCard !== null && (
+            <div className="card-detail-panel visible">
+              <button className="detail-close" onClick={() => setSelectedCard(null)}>×</button>
+              <div className="detail-kicker">{cardDetails[selectedCard].kicker}</div>
+              <h4>{cardDetails[selectedCard].title}</h4>
+              <p>{cardDetails[selectedCard].desc}</p>
+              <button 
+                onClick={() => onNext && onNext(cardDetails[selectedCard].view)}
+                className="px-5 py-2 rounded-xl bg-[#C77DFF] text-black font-mono font-bold text-xs hover:bg-[#E879F9] transition-all cursor-pointer shadow-[0_0_15px_rgba(199,125,255,0.4)]"
+              >
+                Launch {cardDetails[selectedCard].title} Module →
+              </button>
+            </div>
+          )}
         </div>
       </section>
 
