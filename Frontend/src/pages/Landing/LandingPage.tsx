@@ -259,7 +259,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       <motion.section 
         initial={{ opacity: 0, y: 40, scale: 0.96 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.25 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/90 flex flex-col items-center overflow-hidden"
       >
@@ -287,7 +287,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="text-center space-y-4"
           >
@@ -340,7 +340,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                 key={idx}
                 initial={{ opacity: 0, y: 80, scale: 0.85, filter: 'blur(10px)', rotate: f.rotate }}
                 whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', rotate: f.rotate }}
-                viewport={{ once: true, amount: 0.25 }}
+                viewport={{ once: false, amount: 0.2 }}
                 transition={{ 
                   duration: 1.1, 
                   delay: f.delay,
@@ -387,7 +387,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           <motion.div 
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: false, amount: 0.2 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="text-center space-y-4"
           >
@@ -442,7 +442,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       <motion.section 
         initial={{ opacity: 0, y: 50, scale: 0.94 }}
         whileInView={{ opacity: 1, y: 0, scale: 1 }}
-        viewport={{ once: true, amount: 0.3 }}
+        viewport={{ once: false, amount: 0.2 }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60"
       >
