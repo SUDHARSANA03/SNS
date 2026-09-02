@@ -49,13 +49,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const [isSplit, setIsSplit] = useState(false);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
+  const featureStackRef = useRef<HTMLDivElement>(null);
+  const [isFeatureSplit, setIsFeatureSplit] = useState(false);
+  const [selectedFeatureCard, setSelectedFeatureCard] = useState<number | null>(null);
+
   useEffect(() => {
     let ticking = false;
     const updateSplit = () => {
       ticking = false;
-      if (!stackRef.current) return;
-      const rect = stackRef.current.getBoundingClientRect();
-      setIsSplit(rect.top < window.innerHeight * 0.78);
+      if (stackRef.current) {
+        const rect = stackRef.current.getBoundingClientRect();
+        setIsSplit(rect.top < window.innerHeight * 0.78);
+      }
+      if (featureStackRef.current) {
+        const rectF = featureStackRef.current.getBoundingClientRect();
+        setIsFeatureSplit(rectF.top < window.innerHeight * 0.78);
+      }
     };
 
     window.addEventListener('scroll', () => {
@@ -288,50 +297,60 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('feed')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
-                <Terminal className="w-7 h-7" />
+          {/* RUMMY SHUFFLE & SCROLL SPLIT FAN-OUT FEATURE CARDS */}
+          <div 
+            ref={featureStackRef}
+            className={`feature-card-stack ${isFeatureSplit ? 'cards-split' : ''} ${selectedFeatureCard !== null ? 'has-selection' : ''}`}
+          >
+            {[
+              { 
+                icon: <Terminal className="w-7 h-7" />, 
+                title: 'Regex Stream Tokenizer', 
+                desc: 'High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.', 
+                rot: '-4deg', 
+                delay: '0s', 
+                view: 'feed' 
+              },
+              { 
+                icon: <Cpu className="w-7 h-7" />, 
+                title: 'Heuristic Anomaly Radar', 
+                desc: 'Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.', 
+                rot: '0deg', 
+                delay: '0.15s', 
+                view: 'detect' 
+              },
+              { 
+                icon: <ShieldCheck className="w-7 h-7" />, 
+                title: 'NVIDIA AI Synthesis', 
+                desc: 'Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.', 
+                rot: '4deg', 
+                delay: '0.3s', 
+                view: 'guard' 
+              },
+            ].map((f, idx) => (
+              <div 
+                key={idx} 
+                style={{ '--r': f.rot, '--d': f.delay } as React.CSSProperties}
+                className={`feature-card-item p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/95 backdrop-blur-md relative group hover:border-[#C77DFF]/70 shadow-[0_12px_35px_rgba(0,0,0,0.5)] ${selectedFeatureCard === idx ? 'is-selected' : ''}`}
+                onClick={() => {
+                  if (selectedFeatureCard === idx) {
+                    setSelectedFeatureCard(null);
+                    if (onNext) onNext(f.view);
+                  } else {
+                    setSelectedFeatureCard(idx);
+                  }
+                }}
+              >
+                <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
+                  {f.icon}
+                </div>
+                <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{f.title}</h3>
+                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{f.desc}</p>
+                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">
+                  {selectedFeatureCard === idx ? 'Open module →' : 'Click to inspect →'}
+                </div>
               </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Regex Stream Tokenizer</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.
-              </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Live Feed →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#E879F9]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('detect')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#E879F9]/15 border border-[#E879F9]/30 flex items-center justify-center text-[#E879F9] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(232,121,249,0.15)]">
-                <Cpu className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Heuristic Anomaly Radar</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.
-              </p>
-              <div className="text-xs font-mono text-[#E879F9] pt-1 flex items-center gap-1 font-semibold">Open Threat Radar →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('guard')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
-                <ShieldCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">NVIDIA AI Synthesis</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.
-              </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Model Guard →</div>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
