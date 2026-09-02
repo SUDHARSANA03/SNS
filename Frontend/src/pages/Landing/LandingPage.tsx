@@ -313,9 +313,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ STEPS ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/40">
-        <div className="max-w-6xl mx-auto space-y-16">
+      {/* ═══════════════════════════════════════════════ STEPS / TRIAGE PIPELINE ═══════════════════════════════════════════════ */}
+      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60 overflow-hidden">
+        <div className="max-w-6xl mx-auto space-y-16 relative">
 
           <div className="text-center space-y-4">
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
@@ -325,27 +325,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <p className="text-neutral-400 text-base font-sans font-light">Four automated steps from raw log ingest to incident resolution</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* GLOWING PIPELINE CONNECTOR BEAM BEHIND CARDS */}
+          <div className="absolute top-[58%] left-8 right-8 h-[2px] bg-gradient-to-r from-[#C77DFF]/10 via-[#C77DFF]/50 to-[#E879F9]/10 pointer-events-none hidden lg:block -translate-y-1/2 z-0 shadow-[0_0_15px_#C77DFF]" />
+
+          {/* STAGGERED SCROLL REVEAL CARDS (All-in-one sequential animation) */}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.18,
+                  delayChildren: 0.1,
+                },
+              },
+            }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative z-10"
+          >
             {[
               { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'feed' },
               { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'detect' },
               { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'guard' },
               { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'chain' },
             ].map((s, idx) => (
-              <div 
+              <motion.div 
                 key={idx} 
-                className="p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md relative group hover:border-[#C77DFF]/50 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
+                variants={{
+                  hidden: { opacity: 0, y: 45, scale: 0.94 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: {
+                      type: 'spring',
+                      stiffness: 85,
+                      damping: 14,
+                    },
+                  },
+                }}
+                className="p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md relative group hover:border-[#C77DFF]/60 hover:-translate-y-2 transition-all duration-300 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.5)] hover:shadow-[0_12px_40px_rgba(199,125,255,0.25)]"
                 onClick={() => onNext && onNext(s.view)}
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-4xl font-bold font-mono text-neutral-700 group-hover:text-[#C77DFF]/40 transition-colors duration-500">{s.step}</span>
-                  <div className={`p-2.5 rounded-xl border ${s.iconBg}`}>{s.icon}</div>
+                  <span className="text-4xl font-bold font-mono text-neutral-600 group-hover:text-[#C77DFF] transition-colors duration-500">{s.step}</span>
+                  <div className={`p-2.5 rounded-xl border ${s.iconBg} group-hover:scale-110 transition-transform duration-300`}>{s.icon}</div>
                 </div>
-                <h4 className="font-bold text-white text-base font-serif-luxury">{s.title}</h4>
+                <h4 className="font-bold text-white text-base font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{s.title}</h4>
                 <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{s.desc}</p>
-              </div>
+                <div className="text-[11px] font-mono text-[#C77DFF] pt-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300 font-semibold flex items-center gap-1">
+                  Explore Step {s.step} →
+                </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
