@@ -403,10 +403,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             className={`triage-card-stack ${isSplit ? 'cards-split' : ''} ${selectedCard !== null ? 'has-selection' : ''}`}
           >
             {[
-              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', rot: '-6deg', delay: '0s', view: 'feed' },
-              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', rot: '-2deg', delay: '0.12s', view: 'detect' },
-              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', rot: '2deg', delay: '0.24s', view: 'guard' },
-              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', rot: '6deg', delay: '0.36s', view: 'chain' },
+              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', rot: '-5deg', delay: '0s', view: 'feed' },
+              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', rot: '-1.5deg', delay: '0.22s', view: 'detect' },
+              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', rot: '1.5deg', delay: '0.44s', view: 'guard' },
+              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', rot: '5deg', delay: '0.66s', view: 'chain' },
             ].map((s, idx) => (
               <div 
                 key={idx} 

@@ -1182,10 +1182,10 @@
 
 /* ================= RUMMY-STYLE SHUFFLE & SCROLL SPLIT CARDS ================= */
 @keyframes rummyShuffle {
-  0% { opacity: 0; transform: translate(0, -125px) rotate(0deg) scale(0.88); filter: blur(8px); }
-  25% { opacity: 1; }
-  55% { transform: translate(var(--shuffle-x, 0px), 12px) rotate(var(--shuffle-r, 0deg)) scale(1.015); filter: blur(0); }
-  76% { transform: translate(calc(var(--shuffle-x, 0px) * -0.35), -5px) rotate(calc(var(--shuffle-r, 0deg) * -0.35)) scale(1.005); }
+  0% { opacity: 0; transform: translate(0, -90px) rotate(0deg) scale(0.9); filter: blur(10px); }
+  30% { opacity: 1; }
+  60% { transform: translate(var(--shuffle-x, 0px), 10px) rotate(var(--shuffle-r, 0deg)) scale(1.012); filter: blur(0); }
+  80% { transform: translate(calc(var(--shuffle-x, 0px) * -0.25), -4px) rotate(calc(var(--shuffle-r, 0deg) * -0.25)) scale(1.003); }
   100% { opacity: 1; transform: translate(0, 0) rotate(var(--r, 0deg)) scale(1); }
 }
 
@@ -1213,9 +1213,9 @@
   width: 245px;
   margin: 0;
   transform: translateX(-50%) rotate(0deg) scale(0.94);
-  transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-  animation: rummyShuffle 1.25s cubic-bezier(0.2, 0.85, 0.25, 1) both, cardFloat 6s ease-in-out 1.35s infinite;
-  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 1.35s);
+  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: rummyShuffle 2.2s cubic-bezier(0.16, 1, 0.3, 1) both, cardFloat 7s ease-in-out 2.3s infinite;
+  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 2.3s);
   cursor: pointer;
   touch-action: manipulation;
   z-index: 1;
