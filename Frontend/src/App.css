@@ -1100,6 +1100,7 @@
   will-change: background-position, filter;
 }
 
+
 .animated-title-gradient-accent {
   background: linear-gradient(
     135deg,
@@ -1118,6 +1119,193 @@
   width: fit-content;
   will-change: background-position, filter;
 }
+
+/* ================= AUTH MODAL STYLES ================= */
+.auth-modal {
+  max-width: 460px;
+}
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.auth-label {
+  font: 600 11px var(--sans);
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.auth-field {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(10, 8, 16, 0.8);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  color: #fff;
+  font: 13px var(--sans);
+  outline: none;
+  transition: all 0.2s ease;
+}
+.auth-field:focus {
+  border-color: var(--ai);
+  box-shadow: 0 0 14px rgba(199, 125, 255, 0.25);
+  background: rgba(10, 8, 16, 0.95);
+}
+.auth-toggle-row {
+  margin: 12px 0 18px;
+  text-align: center;
+}
+.auth-toggle-text {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+.link-btn {
+  background: none;
+  border: none;
+  color: var(--ai);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  margin-left: 4px;
+}
+.link-btn:hover {
+  color: #E879F9;
+}
+.auth-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ================= RUMMY-STYLE SHUFFLE & SCROLL SPLIT CARDS ================= */
+@keyframes rummyShuffle {
+  0% { opacity: 0; transform: translate(0, -110px) rotate(0deg) scale(0.85); filter: blur(12px); }
+  25% { opacity: 1; }
+  55% { transform: translate(var(--shuffle-x, 0px), 14px) rotate(var(--shuffle-r, 0deg)) scale(1.02); filter: blur(0); }
+  75% { transform: translate(calc(var(--shuffle-x, 0px) * -0.2), -4px) rotate(calc(var(--shuffle-r, 0deg) * -0.2)) scale(1.004); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(var(--r, 0deg)) scale(1); }
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+
+.triage-card-stack {
+  min-height: 280px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  perspective: 1100px;
+  isolation: isolate;
+  margin: 24px auto 0;
+  width: 100%;
+}
+
+.triage-card-stack .triage-card {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 245px;
+  margin: 0;
+  opacity: 0;
+  transform: translateX(-50%) rotate(0deg) scale(0.9);
+  transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: pointer;
+  touch-action: manipulation;
+  z-index: 1;
+}
+
+.triage-card-stack.cards-split {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: nowrap;
+}
+
+.triage-card-stack.cards-split .triage-card {
+  position: relative;
+  left: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+  animation: rummyShuffle 3.2s cubic-bezier(0.16, 1, 0.3, 1) both, cardFloat 8s ease-in-out 3.3s infinite;
+  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 3.3s);
+}
+
+.triage-card-stack.cards-split .triage-card:nth-child(1) { transform: translateY(0) rotate(-5deg) scale(1); z-index: 1; }
+.triage-card-stack.cards-split .triage-card:nth-child(2) { transform: translateY(0) rotate(-1.5deg) scale(1); z-index: 2; }
+.triage-card-stack.cards-split .triage-card:nth-child(3) { transform: translateY(0) rotate(1.5deg) scale(1); z-index: 3; }
+.triage-card-stack.cards-split .triage-card:nth-child(4) { transform: translateY(0) rotate(5deg) scale(1); z-index: 4; }
+
+.triage-card-stack .triage-card.is-selected {
+  z-index: 20 !important;
+  transform: translateY(-20px) rotate(0deg) scale(1.06) !important;
+  border-color: rgba(199, 125, 255, 0.7) !important;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.6), 0 0 35px rgba(199, 125, 255, 0.3) !important;
+}
+
+.triage-card-stack.has-selection .triage-card:not(.is-selected) {
+  opacity: 0.45;
+  filter: saturate(0.6) brightness(0.7);
+}
+
+@media (max-width: 1024px) {
+  .triage-card-stack.cards-split {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+}
+
+/* ================= HTML-STYLE FEATURE CARDS ANIMATION ================= */
+.feature-card-anim {
+  animation: featureCardFloat 6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  transform: translateY(0) rotate(var(--r, 0deg));
+}
+
+.feature-card-anim:hover {
+  transform: translateY(-12px) rotate(0deg) scale(1.03) !important;
+}
+
+@keyframes featureCardFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+
+/* ================= TITLE SHEEN GRADIENT INTRO ANIMATION ================= */
+@keyframes titleSheen {
+  0%, 55% { background-position: 0% 50%; }
+  78%, 100% { background-position: 100% 50%; }
+}
+
+.animated-title-gradient {
+  background: linear-gradient(100deg, #F5F1FA 15%, #C77DFF 48%, #FF6B9D 78%, #F5F1FA 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: titleSheen 6s ease-in-out 1.1s infinite;
+}
+
+.animated-title-gradient-accent {
+  background: linear-gradient(135deg, #C77DFF 0%, #E879F9 50%, #FF6B9D 100%);
+  background-size: 220% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: titleSheen 5s ease-in-out infinite;
+}
+
+
+
+
+
 
 
 
