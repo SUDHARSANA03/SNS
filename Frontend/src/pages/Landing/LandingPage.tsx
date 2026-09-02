@@ -338,36 +338,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             ].map((f, idx) => (
               <motion.div 
                 key={idx}
-                initial={{ opacity: 0, y: 65, scale: 0.88, rotate: f.rotate }}
-                whileInView={{ opacity: 1, y: 0, scale: 1, rotate: f.rotate }}
-                viewport={{ once: true, amount: 0.15 }}
+                initial={{ opacity: 0, y: 80, scale: 0.85, filter: 'blur(10px)', rotate: f.rotate }}
+                whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', rotate: f.rotate }}
+                viewport={{ once: true, amount: 0.25 }}
                 transition={{ 
-                  duration: 0.9, 
+                  duration: 1.1, 
                   delay: f.delay,
                   ease: [0.16, 1, 0.3, 1] 
                 }}
                 whileHover={{ 
-                  y: -14, 
+                  y: -16, 
                   scale: 1.04, 
                   rotate: 0,
                   transition: { duration: 0.25, ease: "easeOut" } 
                 }}
-                className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md relative group cursor-pointer shadow-[0_12px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_22px_55px_rgba(199,125,255,0.3)] hover:border-[#C77DFF]/70 overflow-hidden"
+                className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md relative group cursor-pointer shadow-[0_12px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_25px_60px_rgba(199,125,255,0.35)] hover:border-[#C77DFF]/70 overflow-hidden"
                 onClick={() => onNext && onNext(f.view)}
               >
-                {/* Glowing ambient background light orb */}
-                <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-[#C77DFF]/15 blur-2xl pointer-events-none group-hover:bg-[#C77DFF]/35 transition-all duration-500" />
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 5.5 + idx * 1.2, ease: "easeInOut", delay: f.delay }}
+                  className="space-y-5"
+                >
+                  {/* Glowing ambient background light orb */}
+                  <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-[#C77DFF]/15 blur-2xl pointer-events-none group-hover:bg-[#C77DFF]/35 transition-all duration-500" />
 
-                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(199,125,255,0.2)] relative z-10`}>
-                  {f.icon}
-                </div>
-                <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300 relative z-10">{f.title}</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light relative z-10">
-                  {f.desc}
-                </p>
-                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-2 transition-transform duration-300 relative z-10">
-                  {f.link}
-                </div>
+                  <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(199,125,255,0.2)] relative z-10`}>
+                    {f.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300 relative z-10">{f.title}</h3>
+                  <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light relative z-10">
+                    {f.desc}
+                  </p>
+                  <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-2 transition-transform duration-300 relative z-10">
+                    {f.link}
+                  </div>
+                </motion.div>
               </motion.div>
             ))}
           </div>
