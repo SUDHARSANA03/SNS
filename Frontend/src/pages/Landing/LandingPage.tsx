@@ -309,7 +309,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               visible: {
                 opacity: 1,
                 transition: {
-                  staggerChildren: 0.2,
+                  staggerChildren: 0.22,
                   delayChildren: 0.1,
                 },
               },
@@ -325,6 +325,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                 color: '#C77DFF',
                 iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
                 view: 'feed',
+                rot: '-3deg',
+                delay: '0s',
               },
               {
                 title: 'Heuristic Anomaly Radar',
@@ -334,6 +336,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                 color: '#E879F9',
                 iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30 text-[#E879F9]',
                 view: 'detect',
+                rot: '0deg',
+                delay: '0.2s',
               },
               {
                 title: 'NVIDIA AI Synthesis',
@@ -343,34 +347,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                 color: '#C77DFF',
                 iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
                 view: 'guard',
+                rot: '3deg',
+                delay: '0.4s',
               },
             ].map((f, idx) => (
               <motion.div 
                 key={idx}
+                style={{ '--r': f.rot, '--d': f.delay } as React.CSSProperties}
                 variants={{
-                  hidden: { opacity: 0, y: 55, scale: 0.9 },
+                  hidden: { opacity: 0, y: 55, scale: 0.9, filter: 'blur(8px)' },
                   visible: {
                     opacity: 1,
                     y: 0,
                     scale: 1,
+                    filter: 'blur(0px)',
                     transition: {
                       type: 'spring',
-                      stiffness: 90,
+                      stiffness: 75,
                       damping: 14,
                     },
                   },
                 }}
-                className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md hover:border-[#C77DFF]/60 hover:-translate-y-2 transition-all duration-300 group cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_14px_45px_rgba(199,125,255,0.25)]"
+                className="feature-card-anim p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md hover:border-[#C77DFF]/60 transition-all duration-300 group cursor-pointer shadow-[0_12px_35px_rgba(0,0,0,0.4)] hover:shadow-[0_20px_50px_rgba(199,125,255,0.25)] relative overflow-hidden"
                 onClick={() => onNext && onNext(f.view)}
               >
-                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]`}>
+                {/* HTML style background ambient light orb */}
+                <div className="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-[#C77DFF]/10 blur-xl pointer-events-none group-hover:bg-[#C77DFF]/25 transition-all duration-500" />
+
+                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)] relative z-10`}>
                   {f.icon}
                 </div>
-                <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{f.title}</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
+                <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300 relative z-10">{f.title}</h3>
+                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light relative z-10">
                   {f.desc}
                 </p>
-                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-1 transition-transform duration-300">
+                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-1.5 transition-transform duration-300 relative z-10">
                   {f.link}
                 </div>
               </motion.div>

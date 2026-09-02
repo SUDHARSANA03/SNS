@@ -1262,6 +1262,23 @@
   }
 }
 
+/* ================= HTML-STYLE FEATURE CARDS ANIMATION ================= */
+.feature-card-anim {
+  animation: featureCardFloat 6s ease-in-out infinite;
+  animation-delay: var(--d, 0s);
+  transform: translateY(0) rotate(var(--r, 0deg));
+}
+
+.feature-card-anim:hover {
+  transform: translateY(-12px) rotate(0deg) scale(1.03) !important;
+}
+
+@keyframes featureCardFloat {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-8px) rotate(var(--r, 0deg)); }
+}
+
+
 
 
 
