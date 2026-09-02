@@ -3,6 +3,12 @@ import { AnalysisResult, SessionData, formatTime } from '../data'
 import { checkBackendHealth, parseLogContentClient, uploadLogFile, fetchSessionAnalysis } from '../services/api'
 import { SAMPLE_LOGS } from '../data/sampleLogs'
 
+export interface UserProfile {
+  name: string
+  email: string
+  role: string
+}
+
 export type PipelineStage = 'idle' | 'uploading' | 'parsing' | 'detecting' | 'llm_reasoning' | 'completed' | 'failed'
 
 export interface PipelineLogItem {
@@ -17,6 +23,14 @@ interface SessionContextType {
   sessionsHistory: SessionData[]
   backendConnected: boolean | null
   backendMessage: string
+  // User Auth State
+  user: UserProfile | null
+  isAuthModalOpen: boolean
+  authModalMode: 'login' | 'signup'
+  openAuthModal: (mode?: 'login' | 'signup') => void
+  closeAuthModal: () => void
+  loginUser: (userData: UserProfile) => void
+  logoutUser: () => void
   // Interactive Visualizer state
   isVisualizerOpen: boolean
   pipelineStage: PipelineStage
@@ -40,6 +54,7 @@ interface SessionContextType {
 }
 
 const STORAGE_KEY = 'incident_ai_sessions_v1'
+const USER_KEY = 'incident_ai_user_v1'
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
 
@@ -48,6 +63,11 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [sessionsHistory, setSessionsHistory] = useState<SessionData[]>([])
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null)
   const [backendMessage, setBackendMessage] = useState('')
+
+  // User Auth state
+  const [user, setUser] = useState<UserProfile | null>(null)
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login')
 
   // Visualizer / Pipeline state
   const [isVisualizerOpen, setIsVisualizerOpen] = useState(false)
@@ -58,6 +78,7 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Ingest Modal state
   const [isLogModalOpen, setIsLogModalOpen] = useState(false)
+
   const [activeModalTab, setActiveModalTab] = useState<'upload' | 'paste' | 'samples'>('upload')
 
   const logCounter = useRef(0)
@@ -74,21 +95,65 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     ])
   }, [])
 
-  // Load saved history on mount
+  // Load saved history and user on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY)
       if (raw) {
         const parsed = JSON.parse(raw) as SessionData[]
-        setSessionsHistory(parsed)
-        if (parsed.length > 0) {
-          setCurrentSession(parsed[0])
-        }
+        const cleaned = parsed.filter(
+          (s) =>
+            !s.fileName?.toLowerCase().includes('mock') &&
+            !s.session_id?.toLowerCase().includes('mock')
+        )
+        setSessionsHistory(cleaned)
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned))
+        } catch {}
       }
     } catch (e) {
       console.error('Failed to load history from localStorage', e)
     }
+
+    try {
+      const savedUser = localStorage.getItem(USER_KEY)
+      if (savedUser) {
+        setUser(JSON.parse(savedUser))
+      }
+    } catch (e) {
+      console.error('Failed to load user from localStorage', e)
+    }
   }, [])
+
+  const openAuthModal = useCallback((mode: 'login' | 'signup' = 'login') => {
+    setAuthModalMode(mode)
+    setIsAuthModalOpen(true)
+  }, [])
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false)
+  }, [])
+
+  const loginUser = useCallback((userData: UserProfile) => {
+    setUser(userData)
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify(userData))
+    } catch (e) {
+      console.error('Failed to save user to localStorage', e)
+    }
+    setIsAuthModalOpen(false)
+  }, [])
+
+  const logoutUser = useCallback(() => {
+    setUser(null)
+    try {
+      localStorage.removeItem(USER_KEY)
+    } catch (e) {
+      console.error('Failed to remove user from localStorage', e)
+    }
+  }, [])
+
+
 
   // Save history to storage
   const saveHistory = useCallback((updated: SessionData[]) => {
@@ -312,6 +377,13 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         sessionsHistory,
         backendConnected,
         backendMessage,
+        user,
+        isAuthModalOpen,
+        authModalMode,
+        openAuthModal,
+        closeAuthModal,
+        loginUser,
+        logoutUser,
         isVisualizerOpen,
         pipelineStage,
         pipelineProgress,

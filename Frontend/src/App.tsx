@@ -10,6 +10,7 @@ import Timechain from './components/Timechain'
 import Profile from './components/Profile'
 import ProcessVisualizer from './components/ProcessVisualizer'
 import LogInputModal from './components/LogInputModal'
+import AuthModal from './components/AuthModal'
 import { NAV_ITEMS, ViewId } from './data'
 import { SessionProvider } from './context/SessionContext'
 
@@ -66,6 +67,7 @@ function ConsoleWorkspace() {
       {/* Global Interactive Overlays */}
       <ProcessVisualizer />
       <LogInputModal />
+      <AuthModal />
     </div>
   )
 }
@@ -93,6 +95,7 @@ export default function App() {
   return (
     <SessionProvider>
       <AppContent />
+      <AuthModal />
     </SessionProvider>
   )
 }

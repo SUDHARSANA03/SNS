@@ -14,7 +14,7 @@ export default function TopBar({ activeView, pillLabel, onSelect, onHome }: Prop
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const wrapRef = useRef<HTMLDivElement>(null)
 
-  const { backendConnected, currentSession, openLogModal } = useSession()
+  const { backendConnected, currentSession, openLogModal, user, openAuthModal, logoutUser } = useSession()
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -74,17 +74,45 @@ export default function TopBar({ activeView, pillLabel, onSelect, onHome }: Prop
         </nav>
 
         <div className="topbar-right-actions">
+          {user ? (
+            <button
+              className="topbar-upload-btn"
+              onClick={logoutUser}
+              title="Click to log out"
+              style={{
+                background: 'rgba(199, 125, 255, 0.15)',
+                borderColor: 'rgba(199, 125, 255, 0.4)',
+                color: '#fff',
+                fontSize: '11px',
+              }}
+            >
+              <span>👤 {user.name.split(' ')[0]} (Exit)</span>
+            </button>
+          ) : (
+            <button
+              className="topbar-upload-btn"
+              onClick={() => openAuthModal('login')}
+              style={{
+                background: 'rgba(199, 125, 255, 0.15)',
+                borderColor: 'rgba(199, 125, 255, 0.5)',
+                color: '#E879F9',
+                fontWeight: 700,
+              }}
+            >
+              <span>🔒 Log In</span>
+            </button>
+          )}
+
           <button 
             className="topbar-upload-btn" 
             onClick={onHome}
             style={{ 
-              background: 'rgba(199, 125, 255, 0.12)', 
-              borderColor: 'rgba(199, 125, 255, 0.4)', 
-              color: '#C77DFF',
-              fontWeight: 600 
+              background: 'rgba(255, 255, 255, 0.05)', 
+              borderColor: 'rgba(255, 255, 255, 0.15)', 
+              color: '#B9AFCB',
             }}
           >
-            <span>← Landing Page</span>
+            <span>Landing</span>
           </button>
 
           <button className="topbar-upload-btn" onClick={() => openLogModal('upload')}>

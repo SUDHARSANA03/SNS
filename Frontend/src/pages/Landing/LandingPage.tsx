@@ -43,7 +43,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const headingWord1 = "INCIDENT";
   const headingWord2 = "AI";
 
-  const { currentSession, openLogModal, backendConnected } = useSession();
+  const { currentSession, openLogModal, backendConnected, user, openAuthModal, logoutUser } = useSession();
 
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -91,39 +91,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       {/* Cinematic Canvas Background (Obsidian & Electric Violet) */}
       <InteractiveBackground />
 
-      {/* ═══════════════════════════════════════════════ TOP BRAND HEADER ═══════════════════════════════════════════════ */}
-      <header className="w-full px-6 py-4 flex items-center justify-between z-30 border-b border-[#3A2E52]/60 bg-[#0A0810]/85 backdrop-blur-md sticky top-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-neutral-950 border border-[#C77DFF]/50 flex items-center justify-center text-[#C77DFF] font-mono font-bold shadow-[0_0_15px_rgba(199,125,255,0.35)]">
-            AI
-          </div>
-          <div>
-            <div className="font-bold tracking-wider text-sm font-mono text-white flex items-center gap-2">
-              <span>INCIDENT AI</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C77DFF]/15 text-[#C77DFF] border border-[#C77DFF]/35 font-semibold">INTELLIGENCE</span>
-            </div>
-            <span className="text-[10px] text-neutral-400 font-sans block tracking-widest uppercase">Autonomous Log & Anomaly Triage</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#C77DFF]">
-            <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse"></span>
-            <span>{backendConnected ? 'FastAPI + NVIDIA Active' : 'FastAPI Port 8000'}</span>
-          </div>
-          
-          <button
-            onClick={() => onNext && onNext('feed')}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C77DFF] via-[#A855F7] to-[#E879F9] text-black font-mono font-black text-xs tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(199,125,255,0.35)] hover:shadow-[0_0_30px_rgba(199,125,255,0.6)] transition-all cursor-pointer hover:scale-105 active:scale-95"
-          >
-            <span>NEXT</span>
-            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
-        </div>
-      </header>
-
       {/* ═══════════════════════════════════════════════ HERO ═══════════════════════════════════════════════ */}
-      <section className="relative min-h-[calc(100vh-80px)] flex items-center px-4 sm:px-6 lg:px-8 py-12 lg:py-16 overflow-hidden z-10">
+      <section className="relative min-h-0 flex items-start px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 pb-12 lg:pb-16 overflow-hidden z-10">
         
         {/* FULL-BLEED POSTER BACKGROUND with violet atmospheric tint */}
         <div className="absolute inset-0 z-0">
@@ -139,10 +108,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           <div className="absolute inset-0 bg-gradient-to-b from-[#0A0810]/70 via-transparent to-[#0A0810]/90" />
         </div>
 
-        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
+        <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-start relative z-10">
           
-          {/* LEFT SIDE (45%) */}
-          <div className="lg:col-span-5 flex flex-col justify-center space-y-8 z-20">
+          {/* LEFT SIDE (60%) */}
+          <div className="lg:col-span-7 flex flex-col justify-start space-y-6 z-20 pt-2 sm:pt-3">
             
             {/* Pill Badge */}
             <motion.div 
@@ -157,17 +126,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </span>
             </motion.div>
 
-            {/* Title - Line 1: INCIDENT | Line 2: AI */}
-            <div className="flex flex-col items-start gap-1.5 py-1">
-              <div className="block w-full">
-                <motion.h1 
-                  variants={letterContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.0] block whitespace-nowrap animated-title-gradient m-0"
-                  style={{ display: 'block', width: 'fit-content' }}
-                >
-                  {headingWord1.split("").map((char, index) => (
+            {/* Title - Single Line: INCIDENT AI (Bigger & Bold) */}
+            <div className="py-1 w-full overflow-visible">
+              <motion.h1 
+                variants={letterContainer}
+                initial="hidden"
+                animate="show"
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-none whitespace-nowrap m-0 flex items-center gap-3 sm:gap-4 flex-wrap"
+              >
+                <span className="animated-title-gradient drop-shadow-[0_0_35px_rgba(245,241,250,0.35)]">
+                  {"INCIDENT".split("").map((char, index) => (
                     <motion.span 
                       key={index}
                       variants={letterAnimation}
@@ -176,36 +144,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                       {char}
                     </motion.span>
                   ))}
-                </motion.h1>
-              </div>
-
-              <div className="block w-full">
-                <motion.h1 
-                  variants={letterContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.0] block whitespace-nowrap animated-title-gradient-accent m-0"
-                  style={{ display: 'block', width: 'fit-content' }}
-                >
-                  {headingWord2.split("").map((char, index) => (
+                </span>
+                <span className="animated-title-gradient-accent drop-shadow-[0_0_40px_rgba(199,125,255,0.65)]">
+                  {"AI".split("").map((char, index) => (
                     <motion.span 
-                      key={index}
+                      key={`ai-${index}`}
                       variants={letterAnimation}
                       className="inline-block relative hover:scale-105 transition-transform duration-200"
                     >
                       {char}
                     </motion.span>
                   ))}
-                </motion.h1>
-              </div>
+                </span>
+              </motion.h1>
             </div>
 
-            {/* Paragraph 1 - User-requested copy */}
+            {/* Paragraph 1 - Clean text-left alignment to eliminate word gaps */}
             <motion.p 
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-              className="text-neutral-200 text-base sm:text-lg leading-relaxed font-sans font-normal text-justify"
+              className="text-neutral-200 text-base sm:text-lg leading-relaxed font-sans font-normal text-left max-w-2xl"
             >
               Incident AI is an intelligent monitoring system that continuously analyzes application and infrastructure logs to detect anomalies, errors, and potential incidents in real time. Using AI-driven pattern recognition, it can identify critical issues, correlate events across multiple systems, reduce alert noise, and provide actionable insights to help teams diagnose and resolve incidents faster.
             </motion.p>
@@ -215,13 +174,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-              className="flex items-start gap-4 p-4 rounded-2xl bg-[#15111F]/80 border border-[#3A2E52]/80 backdrop-blur-md"
+              className="flex items-start gap-4 p-4 rounded-2xl bg-[#15111F]/80 border border-[#3A2E52]/80 backdrop-blur-md max-w-2xl"
             >
               <div className="p-2 rounded-xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 shrink-0 text-[#C77DFF] mt-0.5">
                 <Crosshair className="w-5 h-5 animate-pulse" />
               </div>
-              <p className="text-neutral-300 text-sm leading-relaxed font-sans font-light text-justify">
-                Equipped with <span className="text-[#E879F9] font-medium font-mono">NVIDIA Nemotron LLM</span> root-cause synthesis, automated timeline reconstruction, and sub-millisecond anomaly tagging across distributed services.
+              <p className="text-neutral-300 text-sm leading-relaxed font-sans font-light text-left">
+                Equipped with <span className="text-[#E879F9] font-semibold font-mono">NVIDIA Nemotron LLM</span> root-cause synthesis, automated timeline reconstruction, and sub-millisecond anomaly tagging across distributed services.
               </p>
             </motion.div>
 
@@ -241,7 +200,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </div>
             )}
 
-            {/* CTA Button Row with NEXT Button */}
+            {/* CTA Button Row with LOG IN / SIGN UP Button */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -253,10 +212,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               }}
               className="pt-2 flex items-center gap-4 flex-wrap"
             >
-              {/* PRIMARY NEXT BUTTON (Vibrant Violet Gradient) */}
+              {/* PRIMARY LOG IN / SIGN UP BUTTON */}
               <button
                 ref={buttonRef}
-                onClick={handleButtonClick}
+                onClick={(e) => {
+                  if (user) {
+                    handleButtonClick(e)
+                  } else {
+                    openAuthModal('login')
+                  }
+                }}
                 className="group relative px-9 py-4 rounded-2xl bg-gradient-to-r from-[#C77DFF] via-[#A855F7] to-[#E879F9] text-black font-mono font-black tracking-widest text-base flex items-center justify-center gap-3 overflow-hidden shadow-[0_0_25px_rgba(199,125,255,0.4)] border border-[#C77DFF]/50 transition-all duration-300 hover:shadow-[0_0_45px_rgba(199,125,255,0.7)] hover:-translate-y-1 cursor-pointer active:scale-95 select-none"
                 style={{ willChange: 'transform' }}
               >
@@ -277,7 +242,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                   ))}
                 </AnimatePresence>
 
-                <span className="relative z-10">NEXT</span>
+                <span className="relative z-10">{user ? 'ENTER CONSOLE' : 'LOG IN / SIGN UP'}</span>
                 <ArrowRight className="w-5 h-5 text-black group-hover:translate-x-1.5 transition-transform duration-300 stroke-[2.5]" />
               </button>
 
@@ -294,16 +259,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
 
           </div>
 
-          {/* RIGHT SIDE (55%) — Animated HUD overlay rings in Electric Violet */}
+          {/* RIGHT SIDE (40%) — Animated HUD overlay rings in Electric Violet */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 1.5, delay: 0.6, ease: "easeOut" }}
-            className="lg:col-span-7 flex justify-center items-center"
+            className="lg:col-span-5 flex justify-center items-center"
           >
             <RobotSection />
           </motion.div>
 
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ ROBOT / INTELLIGENCE CORE ═══════════════════════════════════════════════ */}
+      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/90 flex flex-col items-center overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full flex flex-col items-center text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C77DFF]/15 border border-[#C77DFF]/40 text-xs text-[#C77DFF] font-mono font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse" />
+            AUTONOMOUS MONITORING CORE
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white font-serif-luxury tracking-tight">
+            Real-Time Threat Radar & Neural Telemetry
+          </h2>
+          <p className="text-neutral-400 max-w-2xl text-base font-sans font-light leading-relaxed">
+            Live 3D telemetry matrix running continuous diagnostic sweeps, anomaly detection, and automated root-cause analysis.
+          </p>
+          <div className="w-full flex justify-center items-center pt-4">
+            <RobotSection />
+          </div>
         </div>
       </section>
 
@@ -313,11 +297,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
 
           <div className="text-center space-y-4">
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
-              Built for Uncompromising Integrity
+              Engineered for High-Throughput Log Intelligence
             </h2>
             <div className="w-16 h-[2px] bg-[#C77DFF] mx-auto rounded-full shadow-[0_0_10px_#C77DFF]" />
             <p className="text-neutral-400 max-w-xl mx-auto text-base font-sans font-light leading-relaxed">
-              AI telemetry, face mesh vectoring, and real-time safe browser lockdown — replacing manual review.
+              Stream ingestion, regex log tokenization, heuristic anomaly radar, and NVIDIA Nemotron LLM root-cause synthesis.
             </p>
           </div>
 
@@ -325,44 +309,44 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             
             <div 
               className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('detect')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
-                <Cpu className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Neural Face & Eye Mesh</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                68-point facial landmark tracking with continuous gaze angle analysis — detecting off-screen glances and dual-person presence.
-              </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Anomaly Radar →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#E879F9]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('guard')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#E879F9]/15 border border-[#E879F9]/30 flex items-center justify-center text-[#E879F9] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(232,121,249,0.15)]">
-                <Lock className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Safe Exam Lockdown</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Intercepts tab switches, right-clicks, copy/paste, DevTools shortcuts, and secondary monitor setups.
-              </p>
-              <div className="text-xs font-mono text-[#E879F9] pt-1 flex items-center gap-1 font-semibold">Open Model Guard →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
               onClick={() => onNext && onNext('feed')}
             >
               <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
                 <Terminal className="w-7 h-7" />
               </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Monaco Compiler</h3>
+              <h3 className="text-xl font-bold text-white font-serif-luxury">Regex Stream Tokenizer</h3>
               <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Full Monaco Editor with Go starter code, custom test runners, memory profiling, and real-time execution.
+                High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.
               </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Stream Feed →</div>
+              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Live Feed →</div>
+            </div>
+
+            <div 
+              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#E879F9]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+              onClick={() => onNext && onNext('detect')}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-[#E879F9]/15 border border-[#E879F9]/30 flex items-center justify-center text-[#E879F9] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(232,121,249,0.15)]">
+                <Cpu className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-white font-serif-luxury">Heuristic Anomaly Radar</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
+                Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.
+              </p>
+              <div className="text-xs font-mono text-[#E879F9] pt-1 flex items-center gap-1 font-semibold">Open Threat Radar →</div>
+            </div>
+
+            <div 
+              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+              onClick={() => onNext && onNext('guard')}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <h3 className="text-xl font-bold text-white font-serif-luxury">NVIDIA AI Synthesis</h3>
+              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
+                Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.
+              </p>
+              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Model Guard →</div>
             </div>
 
           </div>
@@ -375,18 +359,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
 
           <div className="text-center space-y-4">
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
-              How It Works
+              Autonomous Triage Pipeline
             </h2>
             <div className="w-16 h-[2px] bg-[#E879F9] mx-auto rounded-full shadow-[0_0_10px_#E879F9]" />
-            <p className="text-neutral-400 text-base font-sans font-light">Four seamless steps from entry to audit</p>
+            <p className="text-neutral-400 text-base font-sans font-light">Four automated steps from raw log ingest to incident resolution</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { step: '01', icon: <ShieldCheck className="w-5 h-5 text-[#C77DFF]" />, title: 'Identity Check', desc: 'Webcam, mic, screen, and biometric verification before exam start.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'feed' },
-              { step: '02', icon: <Lock className="w-5 h-5 text-[#E879F9]" />, title: 'Viewport Lock', desc: 'Fullscreen enforced, DevTools blocked, copy/paste monitored.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'guard' },
-              { step: '03', icon: <Eye className="w-5 h-5 text-[#C77DFF]" />, title: 'AI Telemetry', desc: 'Continuous face mesh, voice detection, confidence scoring.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'detect' },
-              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Audit Log', desc: 'Flagged timeline, confidence graphs for admin review.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'chain' },
+              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'feed' },
+              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'detect' },
+              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'guard' },
+              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'chain' },
             ].map((s, idx) => (
               <div 
                 key={idx} 
@@ -419,27 +403,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-[#C77DFF] font-mono tracking-tight" style={{ textShadow: '0 0 20px rgba(199,125,255,0.4)' }}>
-                  <AnimatedNumber target={100000} suffix="+" />
+                  <AnimatedNumber target={250000} suffix="+" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Exams</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Logs Parsed</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight">
-                  <AnimatedNumber target={99.8} suffix="%" decimals={1} />
+                  <AnimatedNumber target={99.4} suffix="%" decimals={1} />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Accuracy</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">AI Grounding</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-[#E879F9] font-mono tracking-tight" style={{ textShadow: '0 0 20px rgba(232,121,249,0.4)' }}>
-                  <AnimatedNumber target={15} prefix="<" suffix="ms" />
+                  <AnimatedNumber target={12} prefix="<" suffix="ms" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Latency</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Tokenization</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight">
-                  <AnimatedNumber target={500} suffix="+" />
+                  <AnimatedNumber target={100} suffix="%" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Clients</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Privacy Guard</div>
               </div>
             </div>
           </div>
@@ -451,3 +435,4 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
     </div>
   );
 };
+
