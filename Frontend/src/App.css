@@ -1182,10 +1182,10 @@
 
 /* ================= RUMMY-STYLE SHUFFLE & SCROLL SPLIT CARDS ================= */
 @keyframes rummyShuffle {
-  0% { opacity: 0; transform: translate(0, -90px) rotate(0deg) scale(0.9); filter: blur(10px); }
-  30% { opacity: 1; }
-  60% { transform: translate(var(--shuffle-x, 0px), 10px) rotate(var(--shuffle-r, 0deg)) scale(1.012); filter: blur(0); }
-  80% { transform: translate(calc(var(--shuffle-x, 0px) * -0.25), -4px) rotate(calc(var(--shuffle-r, 0deg) * -0.25)) scale(1.003); }
+  0% { opacity: 0; transform: translate(0, -110px) rotate(0deg) scale(0.85); filter: blur(12px); }
+  25% { opacity: 1; }
+  55% { transform: translate(var(--shuffle-x, 0px), 14px) rotate(var(--shuffle-r, 0deg)) scale(1.02); filter: blur(0); }
+  75% { transform: translate(calc(var(--shuffle-x, 0px) * -0.2), -4px) rotate(calc(var(--shuffle-r, 0deg) * -0.2)) scale(1.004); }
   100% { opacity: 1; transform: translate(0, 0) rotate(var(--r, 0deg)) scale(1); }
 }
 
@@ -1212,10 +1212,9 @@
   bottom: 0;
   width: 245px;
   margin: 0;
-  transform: translateX(-50%) rotate(0deg) scale(0.94);
-  transition: all 1.4s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: rummyShuffle 2.2s cubic-bezier(0.16, 1, 0.3, 1) both, cardFloat 7s ease-in-out 2.3s infinite;
-  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 2.3s);
+  opacity: 0;
+  transform: translateX(-50%) rotate(0deg) scale(0.9);
+  transition: all 1.8s cubic-bezier(0.16, 1, 0.3, 1);
   cursor: pointer;
   touch-action: manipulation;
   z-index: 1;
@@ -1235,6 +1234,8 @@
   bottom: auto !important;
   margin: 0 !important;
   flex-shrink: 0;
+  animation: rummyShuffle 3.2s cubic-bezier(0.16, 1, 0.3, 1) both, cardFloat 8s ease-in-out 3.3s infinite;
+  animation-delay: var(--d, 0s), calc(var(--d, 0s) + 3.3s);
 }
 
 .triage-card-stack.cards-split .triage-card:nth-child(1) { transform: translateY(0) rotate(-5deg) scale(1); z-index: 1; }
