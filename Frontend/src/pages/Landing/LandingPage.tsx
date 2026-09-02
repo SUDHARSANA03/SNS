@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Crosshair, ArrowRight, Activity, User } from 'lucide-react';
+import { Cpu, Terminal, BarChart2, ShieldCheck, Sparkles, Crosshair, ArrowRight } from 'lucide-react';
 import { Footer } from '../../components/common/Footer';
 import { InteractiveBackground } from '../../components/ui/InteractiveBackground';
 import { RobotSection } from '../../components/ui/RobotSection';
@@ -42,13 +42,33 @@ export interface LandingPageProps {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const navigate = useNavigate();
-  const headingWord1 = "INCIDENT";
-  const headingWord2 = "AI";
-
-  const { currentSession, openLogModal, backendConnected } = useSession();
+  const { currentSession, openAuthModal } = useSession();
 
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const stackRef = useRef<HTMLDivElement>(null);
+  const [isSplit, setIsSplit] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+
+  useEffect(() => {
+    let ticking = false;
+    const updateSplit = () => {
+      ticking = false;
+      if (!stackRef.current) return;
+      const rect = stackRef.current.getBoundingClientRect();
+      const isVisible = rect.top < window.innerHeight * 0.85 && rect.bottom > 50;
+      setIsSplit(isVisible);
+    };
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(updateSplit);
+      }
+    }, { passive: true });
+    updateSplit();
+    return () => window.removeEventListener('scroll', updateSplit);
+  }, []);
 
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!buttonRef.current) return;
@@ -62,29 +82,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
     }, 600);
 
     setTimeout(() => {
+      openAuthModal('login');
       navigate('/login');
-    }, 250);
-  };
-
-  const letterContainer = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const letterAnimation = {
-    hidden: { opacity: 0, y: 15, filter: 'blur(6px)' },
-    show: {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      transition: { type: 'spring' as const, stiffness: 90, damping: 12 }
-    }
+    }, 200);
   };
 
   return (
@@ -93,47 +93,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       {/* Cinematic Canvas Background (Obsidian & Electric Violet) */}
       <InteractiveBackground />
 
-      {/* ═══════════════════════════════════════════════ TOP BRAND HEADER ═══════════════════════════════════════════════ */}
-      <header className="w-full px-6 py-4 flex items-center justify-between z-30 border-b border-[#3A2E52]/60 bg-[#0A0810]/85 backdrop-blur-md sticky top-0">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-neutral-950 border border-[#C77DFF]/50 flex items-center justify-center text-[#C77DFF] font-mono font-bold shadow-[0_0_15px_rgba(199,125,255,0.35)]">
-            AI
-          </div>
-          <div>
-            <div className="font-bold tracking-wider text-sm font-mono text-white flex items-center gap-2">
-              <span>INCIDENT AI</span>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#C77DFF]/15 text-[#C77DFF] border border-[#C77DFF]/35 font-semibold">INTELLIGENCE</span>
-            </div>
-            <span className="text-[10px] text-neutral-400 font-sans block tracking-widest uppercase">Autonomous Log & Anomaly Triage</span>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#C77DFF]">
-            <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse"></span>
-            <span>{backendConnected ? 'FastAPI + NVIDIA Active' : 'FastAPI Port 8000'}</span>
-          </div>
-
-          <button
-            onClick={() => navigate('/console', { state: { view: 'profile' } })}
-            className="px-4 py-2.5 rounded-xl bg-[#15111F]/90 border border-[#3A2E52] hover:border-[#C77DFF]/60 text-[#E879F9] hover:text-white font-mono font-semibold text-xs tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_10px_rgba(199,125,255,0.15)]"
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>PROFILE</span>
-          </button>
-          
-          <button
-            onClick={() => navigate('/login')}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C77DFF] via-[#A855F7] to-[#E879F9] text-black font-mono font-black text-xs tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(199,125,255,0.35)] hover:shadow-[0_0_30px_rgba(199,125,255,0.6)] transition-all cursor-pointer hover:scale-105 active:scale-95"
-          >
-            <span>NEXT</span>
-            <ArrowRight className="w-4 h-4 stroke-[2.5]" />
-          </button>
-        </div>
-      </header>
-
-      {/* ═══════════════════════════════════════════════ HERO ═══════════════════════════════════════════════ */}
-      <section className="relative min-h-[calc(100vh-80px)] flex items-center px-4 sm:px-6 lg:px-8 py-12 lg:py-16 overflow-hidden z-10">
+      {/* ═══════════════════════════════════════════════ HERO (Clean, No Header) ═══════════════════════════════════════════════ */}
+      <section className="relative min-h-0 pt-6 pb-12 sm:pb-16 flex items-start px-4 sm:px-6 lg:px-8 overflow-hidden z-10">
         
         {/* FULL-BLEED POSTER BACKGROUND with violet atmospheric tint */}
         <div className="absolute inset-0 z-0">
@@ -151,8 +112,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
 
         <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center relative z-10">
           
-          {/* LEFT SIDE (45%) */}
-          <div className="lg:col-span-5 flex flex-col justify-center space-y-8 z-20">
+          {/* LEFT SIDE (60%) */}
+          <div className="lg:col-span-7 flex flex-col justify-center space-y-6 z-20 pt-2">
             
             {/* Pill Badge */}
             <motion.div 
@@ -167,65 +128,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </span>
             </motion.div>
 
-            {/* Title - Line 1: INCIDENT | Line 2: AI */}
-            <div className="flex flex-col items-start gap-1.5 py-1">
-              <div className="block w-full">
-                <motion.h1 
-                  variants={letterContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.0] block whitespace-nowrap animated-title-gradient m-0"
-                  style={{ display: 'block', width: 'fit-content' }}
-                >
-                  {headingWord1.split("").map((char, index) => (
-                    <motion.span 
-                      key={index}
-                      variants={letterAnimation}
-                      className="inline-block relative hover:scale-105 transition-transform duration-200"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
-                </motion.h1>
-              </div>
+            {/* Single Line Bold Title */}
+            <motion.h1 
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-none whitespace-nowrap m-0 flex items-center gap-3 sm:gap-4"
+            >
+              <span className="animated-title-gradient drop-shadow-[0_0_35px_rgba(245,241,250,0.35)]">INCIDENT</span>
+              <span className="animated-title-gradient-accent drop-shadow-[0_0_40px_rgba(199,125,255,0.65)]">AI</span>
+            </motion.h1>
 
-              <div className="block w-full">
-                <motion.h1 
-                  variants={letterContainer}
-                  initial="hidden"
-                  animate="show"
-                  className="text-5xl sm:text-6xl md:text-6xl lg:text-6xl xl:text-7xl font-black tracking-tight leading-[1.0] block whitespace-nowrap animated-title-gradient-accent m-0"
-                  style={{ display: 'block', width: 'fit-content' }}
-                >
-                  {headingWord2.split("").map((char, index) => (
-                    <motion.span 
-                      key={index}
-                      variants={letterAnimation}
-                      className="inline-block relative hover:scale-105 transition-transform duration-200"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
-                </motion.h1>
-              </div>
-            </div>
-
-            {/* Paragraph 1 - User-requested copy */}
+            {/* Paragraph 1 */}
             <motion.p 
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.6, ease: "easeOut" }}
-              className="text-neutral-200 text-base sm:text-lg leading-relaxed font-sans font-normal text-justify"
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              className="text-neutral-200 text-base sm:text-lg leading-relaxed font-sans font-normal text-justify max-w-2xl"
             >
               Incident AI is an intelligent monitoring system that continuously analyzes application and infrastructure logs to detect anomalies, errors, and potential incidents in real time. Using AI-driven pattern recognition, it can identify critical issues, correlate events across multiple systems, reduce alert noise, and provide actionable insights to help teams diagnose and resolve incidents faster.
             </motion.p>
 
-            {/* Paragraph 2 - Highlights with Target Icon */}
+            {/* Paragraph 2 - Highlights */}
             <motion.div 
-              initial={{ opacity: 0, y: 25 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.8, ease: "easeOut" }}
-              className="flex items-start gap-4 p-4 rounded-2xl bg-[#15111F]/80 border border-[#3A2E52]/80 backdrop-blur-md"
+              transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+              className="flex items-start gap-4 p-4 rounded-2xl bg-[#15111F]/80 border border-[#3A2E52]/80 backdrop-blur-md max-w-2xl"
             >
               <div className="p-2 rounded-xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 shrink-0 text-[#C77DFF] mt-0.5">
                 <Crosshair className="w-5 h-5 animate-pulse" />
@@ -238,7 +167,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             {/* Active Session Badge */}
             {currentSession && (
               <div 
-                className="p-3.5 rounded-2xl bg-gradient-to-r from-[#211438]/80 to-[#15111F]/90 border border-[#C77DFF]/40 flex items-center justify-between text-xs cursor-pointer hover:border-[#C77DFF] transition-all shadow-[0_0_20px_rgba(199,125,255,0.2)]"
+                className="p-3.5 rounded-2xl bg-gradient-to-r from-[#211438]/80 to-[#15111F]/90 border border-[#C77DFF]/40 flex items-center justify-between text-xs cursor-pointer hover:border-[#C77DFF] transition-all shadow-[0_0_20px_rgba(199,125,255,0.2)] max-w-2xl"
                 onClick={() => onNext && onNext('feed')}
               >
                 <div className="flex items-center gap-2.5">
@@ -251,7 +180,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </div>
             )}
 
-            {/* CTA Button Row with NEXT Button */}
+            {/* CTA Button Row */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.85 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -259,11 +188,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                 type: "spring", 
                 stiffness: 120, 
                 damping: 15,
-                delay: 1.0 
+                delay: 0.6 
               }}
               className="pt-2 flex items-center gap-4 flex-wrap"
             >
-              {/* PRIMARY NEXT BUTTON (Vibrant Violet Gradient) */}
               <button
                 ref={buttonRef}
                 onClick={handleButtonClick}
@@ -287,29 +215,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                   ))}
                 </AnimatePresence>
 
-                <span className="relative z-10">NEXT</span>
+                <span className="relative z-10">LOG IN / SIGN UP</span>
                 <ArrowRight className="w-5 h-5 text-black group-hover:translate-x-1.5 transition-transform duration-300 stroke-[2.5]" />
-              </button>
-
-              <button
-                onClick={() => onNext && onNext('detect')}
-                className="group relative px-7 py-4 rounded-2xl bg-[#15111F]/80 text-white font-mono font-bold tracking-wider text-sm flex items-center justify-center gap-3 overflow-hidden border border-[#3A2E52] transition-all duration-300 hover:border-[#C77DFF]/60 hover:bg-[#C77DFF]/15 hover:shadow-[0_0_25px_rgba(199,125,255,0.25)] hover:-translate-y-1 cursor-pointer active:scale-95 select-none backdrop-blur-sm"
-                style={{ willChange: 'transform' }}
-              >
-                <Activity className="w-4 h-4 text-[#E879F9] group-hover:scale-110 transition-transform duration-300" />
-                <span className="relative z-10">ANOMALY RADAR</span>
-                <span className="transform transition-transform duration-300 group-hover:translate-x-1.5 font-sans font-bold">→</span>
               </button>
             </motion.div>
 
           </div>
 
-          {/* RIGHT SIDE (55%) — Animated HUD overlay rings in Electric Violet */}
+          {/* RIGHT SIDE (50%) — Animated HUD overlay rings */}
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1.5, delay: 0.6, ease: "easeOut" }}
-            className="lg:col-span-7 flex justify-center items-center"
+            transition={{ duration: 1.5, delay: 0.4, ease: "easeOut" }}
+            className="lg:col-span-5 flex justify-center items-center"
           >
             <RobotSection />
           </motion.div>
@@ -317,106 +235,197 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ FEATURES ═══════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════ ROBOT / INTELLIGENCE CORE ═══════════════════════════════════════════════ */}
+      <motion.section 
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/90 flex flex-col items-center overflow-hidden"
+      >
+        <div className="max-w-7xl mx-auto w-full flex flex-col items-center text-center space-y-6">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C77DFF]/15 border border-[#C77DFF]/40 text-xs text-[#C77DFF] font-mono font-semibold">
+            <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse" />
+            AUTONOMOUS MONITORING CORE
+          </div>
+          <h2 className="text-3xl sm:text-5xl font-black text-white font-serif-luxury tracking-tight">
+            Real-Time Threat Radar & Neural Telemetry
+          </h2>
+          <p className="text-neutral-400 max-w-2xl text-base font-sans font-light leading-relaxed">
+            Live 3D telemetry matrix running continuous diagnostic sweeps, anomaly detection, and automated root-cause analysis.
+          </p>
+          <div className="w-full flex justify-center items-center pt-4">
+            <RobotSection />
+          </div>
+        </div>
+      </motion.section>
+
+      {/* ═══════════════════════════════════════════════ FEATURES (Staggered Pop-Up Scroll Reveal) ═══════════════════════════════════════════════ */}
       <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/70">
         <div className="max-w-6xl mx-auto space-y-20">
 
-          <div className="text-center space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center space-y-4"
+          >
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
-              Built for Uncompromising Integrity
+              Engineered for High-Throughput Log Intelligence
             </h2>
             <div className="w-16 h-[2px] bg-[#C77DFF] mx-auto rounded-full shadow-[0_0_10px_#C77DFF]" />
             <p className="text-neutral-400 max-w-xl mx-auto text-base font-sans font-light leading-relaxed">
-              AI telemetry, face mesh vectoring, and real-time safe browser lockdown — replacing manual review.
+              Stream ingestion, regex log tokenization, heuristic anomaly radar, and NVIDIA Nemotron LLM root-cause synthesis.
             </p>
-          </div>
+          </motion.div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('detect')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
-                <Cpu className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Neural Face & Eye Mesh</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                68-point facial landmark tracking with continuous gaze angle analysis — detecting off-screen glances and dual-person presence.
-              </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Anomaly Radar →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#E879F9]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('guard')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#E879F9]/15 border border-[#E879F9]/30 flex items-center justify-center text-[#E879F9] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(232,121,249,0.15)]">
-                <Lock className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Safe Exam Lockdown</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Intercepts tab switches, right-clicks, copy/paste, DevTools shortcuts, and secondary monitor setups.
-              </p>
-              <div className="text-xs font-mono text-[#E879F9] pt-1 flex items-center gap-1 font-semibold">Open Model Guard →</div>
-            </div>
-
-            <div 
-              className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md hover:border-[#C77DFF]/50 transition-all duration-300 group hover:-translate-y-1 cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
-              onClick={() => onNext && onNext('feed')}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
-                <Terminal className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-bold text-white font-serif-luxury">Monaco Compiler</h3>
-              <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
-                Full Monaco Editor with Go starter code, custom test runners, memory profiling, and real-time execution.
-              </p>
-              <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">Open Stream Feed →</div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════ STEPS ═══════════════════════════════════════════════ */}
-      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/40">
-        <div className="max-w-6xl mx-auto space-y-16">
-
-          <div className="text-center space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
-              How It Works
-            </h2>
-            <div className="w-16 h-[2px] bg-[#E879F9] mx-auto rounded-full shadow-[0_0_10px_#E879F9]" />
-            <p className="text-neutral-400 text-base font-sans font-light">Four seamless steps from entry to audit</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { step: '01', icon: <ShieldCheck className="w-5 h-5 text-[#C77DFF]" />, title: 'Identity Check', desc: 'Webcam, mic, screen, and biometric verification before exam start.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'feed' },
-              { step: '02', icon: <Lock className="w-5 h-5 text-[#E879F9]" />, title: 'Viewport Lock', desc: 'Fullscreen enforced, DevTools blocked, copy/paste monitored.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'guard' },
-              { step: '03', icon: <Eye className="w-5 h-5 text-[#C77DFF]" />, title: 'AI Telemetry', desc: 'Continuous face mesh, voice detection, confidence scoring.', iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30', view: 'detect' },
-              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Audit Log', desc: 'Flagged timeline, confidence graphs for admin review.', iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30', view: 'chain' },
-            ].map((s, idx) => (
-              <div 
-                key={idx} 
-                className="p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/70 backdrop-blur-md relative group hover:border-[#C77DFF]/50 transition-all duration-300 cursor-pointer shadow-[0_4px_20px_rgba(0,0,0,0.3)]"
-                onClick={() => onNext && onNext(s.view)}
+              {
+                title: 'Regex Stream Tokenizer',
+                desc: 'High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.',
+                icon: <Terminal className="w-7 h-7" />,
+                link: 'Open Live Feed →',
+                color: '#C77DFF',
+                iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
+                view: 'feed',
+                rotate: -3,
+                delay: 0,
+              },
+              {
+                title: 'Heuristic Anomaly Radar',
+                desc: 'Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.',
+                icon: <Cpu className="w-7 h-7" />,
+                link: 'Open Threat Radar →',
+                color: '#E879F9',
+                iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30 text-[#E879F9]',
+                view: 'detect',
+                rotate: 0,
+                delay: 0.2,
+              },
+              {
+                title: 'NVIDIA AI Synthesis',
+                desc: 'Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.',
+                icon: <ShieldCheck className="w-7 h-7" />,
+                link: 'Open Model Guard →',
+                color: '#C77DFF',
+                iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
+                view: 'guard',
+                rotate: 3,
+                delay: 0.4,
+              },
+            ].map((f, idx) => (
+              <motion.div 
+                key={idx}
+                initial={{ opacity: 0, y: 80, scale: 0.85, filter: 'blur(10px)', rotate: f.rotate }}
+                whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', rotate: f.rotate }}
+                viewport={{ once: false, amount: 0.2 }}
+                transition={{ 
+                  duration: 1.1, 
+                  delay: f.delay,
+                  ease: [0.16, 1, 0.3, 1] 
+                }}
+                whileHover={{ 
+                  y: -16, 
+                  scale: 1.04, 
+                  rotate: 0,
+                  transition: { duration: 0.25, ease: "easeOut" } 
+                }}
+                className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md relative group cursor-pointer shadow-[0_12px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_25px_60px_rgba(199,125,255,0.35)] hover:border-[#C77DFF]/70 overflow-hidden"
+                onClick={() => onNext && onNext(f.view)}
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-4xl font-bold font-mono text-neutral-700 group-hover:text-[#C77DFF]/40 transition-colors duration-500">{s.step}</span>
-                  <div className={`p-2.5 rounded-xl border ${s.iconBg}`}>{s.icon}</div>
-                </div>
-                <h4 className="font-bold text-white text-base font-serif-luxury">{s.title}</h4>
-                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{s.desc}</p>
-              </div>
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ repeat: Infinity, duration: 5.5 + idx * 1.2, ease: "easeInOut", delay: f.delay }}
+                  className="space-y-5"
+                >
+                  {/* Glowing ambient background light orb */}
+                  <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-[#C77DFF]/15 blur-2xl pointer-events-none group-hover:bg-[#C77DFF]/35 transition-all duration-500" />
+
+                  <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-300 shadow-[0_0_20px_rgba(199,125,255,0.2)] relative z-10`}>
+                    {f.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300 relative z-10">{f.title}</h3>
+                  <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light relative z-10">
+                    {f.desc}
+                  </p>
+                  <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-2 transition-transform duration-300 relative z-10">
+                    {f.link}
+                  </div>
+                </motion.div>
+              </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ STATS ═══════════════════════════════════════════════ */}
-      <section className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60">
+      {/* ═══════════════════════════════════════════════ STEPS / TRIAGE PIPELINE ═══════════════════════════════════════════════ */}
+      <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60 overflow-hidden">
+        <div className="max-w-6xl mx-auto space-y-12 relative">
+
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: false, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center space-y-4"
+          >
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
+              Autonomous Triage Pipeline
+            </h2>
+            <div className="w-16 h-[2px] bg-[#E879F9] mx-auto rounded-full shadow-[0_0_10px_#E879F9]" />
+            <p className="text-neutral-400 text-base font-sans font-light">Four automated steps from raw log ingest to incident resolution</p>
+          </motion.div>
+
+          {/* RUMMY SHUFFLE & SCROLL SPLIT FAN-OUT STACK */}
+          <div 
+            ref={stackRef}
+            className={`triage-card-stack ${isSplit ? 'cards-split' : ''} ${selectedCard !== null ? 'has-selection' : ''}`}
+          >
+            {[
+              { step: '01', icon: <Terminal className="w-5 h-5 text-[#C77DFF]" />, title: 'Log Ingestion', desc: 'Drag & drop .log files, paste raw text, or select incident scenario presets.', rot: '-5deg', delay: '0s', view: 'feed' },
+              { step: '02', icon: <Cpu className="w-5 h-5 text-[#E879F9]" />, title: 'Stream Tokenization', desc: 'Timestamp extraction, log level tagging, and stack trace continuation grouping.', rot: '-1.5deg', delay: '0.35s', view: 'detect' },
+              { step: '03', icon: <Sparkles className="w-5 h-5 text-[#C77DFF]" />, title: 'NVIDIA LLM Reasoning', desc: 'Nemotron 3 Ultra model analyzes error propagation and calculates confidence.', rot: '1.5deg', delay: '0.70s', view: 'guard' },
+              { step: '04', icon: <BarChart2 className="w-5 h-5 text-[#E879F9]" />, title: 'Incident Timechain', desc: 'Reconstructs chronological causality from initial signal through resolution.', rot: '5deg', delay: '1.05s', view: 'chain' },
+            ].map((s, idx) => (
+              <div 
+                key={idx} 
+                style={{ '--r': s.rot, '--d': s.delay } as React.CSSProperties}
+                className={`triage-card p-6 space-y-4 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/95 backdrop-blur-md relative group hover:border-[#C77DFF]/70 shadow-[0_12px_35px_rgba(0,0,0,0.5)] ${selectedCard === idx ? 'is-selected' : ''}`}
+                onClick={() => {
+                  if (selectedCard === idx) {
+                    setSelectedCard(null);
+                    if (onNext) onNext(s.view);
+                  } else {
+                    setSelectedCard(idx);
+                  }
+                }}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-4xl font-bold font-mono text-neutral-500 group-hover:text-[#C77DFF] transition-colors duration-300">{s.step}</span>
+                  <div className="p-2.5 rounded-xl border bg-[#C77DFF]/15 border-[#C77DFF]/30 group-hover:scale-110 transition-transform duration-300">{s.icon}</div>
+                </div>
+                <h4 className="font-bold text-white text-base font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{s.title}</h4>
+                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{s.desc}</p>
+                <div className="text-[11px] font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">
+                  {selectedCard === idx ? 'Open module →' : 'Click to inspect →'}
+                </div>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════ STATS (Pop-Up Scroll Reveal) ═══════════════════════════════════════════════ */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50, scale: 0.94 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: false, amount: 0.2 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60"
+      >
         <div className="max-w-5xl mx-auto">
           <div className="rounded-3xl p-10 sm:p-14 border border-[#3A2E52]/80 bg-[#15111F]/75 backdrop-blur-md shadow-2xl relative overflow-hidden">
             
@@ -429,32 +438,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-10 text-center">
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-[#C77DFF] font-mono tracking-tight" style={{ textShadow: '0 0 20px rgba(199,125,255,0.4)' }}>
-                  <AnimatedNumber target={100000} suffix="+" />
+                  <AnimatedNumber target={500000} suffix="+" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Exams</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Logs / Sec</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight">
-                  <AnimatedNumber target={99.8} suffix="%" decimals={1} />
+                  <AnimatedNumber target={99.9} suffix="%" decimals={1} />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Accuracy</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Precision</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-[#E879F9] font-mono tracking-tight" style={{ textShadow: '0 0 20px rgba(232,121,249,0.4)' }}>
-                  <AnimatedNumber target={15} prefix="<" suffix="ms" />
+                  <AnimatedNumber target={50} prefix="<" suffix="ms" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Latency</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Inference</div>
               </div>
               <div className="space-y-2">
                 <div className="text-4xl sm:text-5xl font-black text-white font-mono tracking-tight">
-                  <AnimatedNumber target={500} suffix="+" />
+                  <AnimatedNumber target={100} suffix="%" />
                 </div>
-                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans">Clients</div>
+                <div className="text-xs text-neutral-400 uppercase tracking-widest font-semibold font-sans font-mono">Autonomous</div>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Premium Dark Footer */}
       <Footer theme="dark" />

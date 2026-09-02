@@ -72,6 +72,8 @@ function ConsoleWorkspace() {
   )
 }
 
+import AuthModal from './components/AuthModal'
+
 function AppContent() {
   const navigate = useNavigate()
 
@@ -82,15 +84,18 @@ function AppContent() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage onNext={handleNext} />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<Navigate to="/login?mode=signup" replace />} />
-      <Route path="/profile" element={<Navigate to="/console" state={{ view: 'profile' }} replace />} />
-      <Route path="/console" element={<ConsoleWorkspace />} />
-      <Route path="/app" element={<ConsoleWorkspace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route path="/" element={<LandingPage onNext={handleNext} />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<Navigate to="/login?mode=signup" replace />} />
+        <Route path="/profile" element={<Navigate to="/console" state={{ view: 'profile' }} replace />} />
+        <Route path="/console" element={<ConsoleWorkspace />} />
+        <Route path="/app" element={<ConsoleWorkspace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <AuthModal />
+    </>
   )
 }
 
