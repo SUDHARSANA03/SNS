@@ -23,3 +23,7 @@ app.include_router(analysis.router, prefix=f"{settings.API_V1_STR}/analysis", ta
 @app.get("/")
 def root():
     return {"message": "Welcome to the AI-powered Log Analyzer API"}
+
+@app.get("/api/health")
+def health():
+    return {"status": "ok", "service": "Incident AI Engine"}

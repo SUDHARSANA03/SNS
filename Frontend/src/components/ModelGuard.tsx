@@ -1,8 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useSession } from '../context/SessionContext'
+import { useAuth } from '../context/AuthContext'
+import { Bookmark, Check, ShieldAlert } from 'lucide-react'
 
 export default function ModelGuard() {
   const { currentSession, openLogModal } = useSession()
+  const { saveError, isErrorSaved } = useAuth()
+  const [savingId, setSavingId] = useState<string | null>(null)
 
   const analysis = currentSession?.analysis
   const rootCauses = analysis?.root_cause_analysis || []
@@ -18,6 +22,44 @@ export default function ModelGuard() {
   const allEvidenceIds = Array.from(new Set(rootCauses.flatMap((c) => c.evidence_log_ids || [])))
   const factsCount = rootCauses.filter((c) => c.type === 'fact').length
   const hypothesesCount = rootCauses.filter((c) => c.type !== 'fact').length
+
+  const handleSaveRootCause = async (rc: (typeof rootCauses)[0], idx: number) => {
+    const targetLogId = rc.evidence_log_ids?.[0] || `rc_${idx + 1}`
+    setSavingId(targetLogId)
+    try {
+      await saveError({
+        log_id: targetLogId,
+        error_level: rc.type === 'fact' ? 'CRITICAL' : 'ERROR',
+        message: rc.cause,
+        summary: summary,
+        root_cause: rc.reasoning,
+        session_id: currentSession?.session_id,
+      })
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const handleSaveSummaryError = async () => {
+    const primaryLogId = allEvidenceIds[0] || currentSession?.errors?.[0]?.log_id || 'incident_summary'
+    setSavingId('summary_save')
+    try {
+      await saveError({
+        log_id: primaryLogId,
+        error_level: 'CRITICAL',
+        message: currentSession?.errors?.[0]?.message || (summary ? summary.slice(0, 150) : 'System Error Signal'),
+        summary: summary,
+        root_cause: rootCauses[0]?.cause,
+        session_id: currentSession?.session_id,
+      })
+    } finally {
+      setSavingId(null)
+    }
+  }
+
+  const isSummarySaved = allEvidenceIds[0]
+    ? isErrorSaved(allEvidenceIds[0], currentSession?.session_id)
+    : false
 
   return (
     <section className="view" id="view-guard">
@@ -44,7 +86,8 @@ export default function ModelGuard() {
           <div className="empty-icon">🧠</div>
           <h3>No AI Model Reasoning Available</h3>
           <p>
-            {summary || 'Run an AI analysis on a log file to extract root causes, model confidence, and actionable debugging recommendations.'}
+            {summary ||
+              'Run an AI analysis on a log file to extract root causes, model confidence, and actionable debugging recommendations.'}
           </p>
           <div className="empty-actions">
             <button className="btn primary glow" onClick={() => openLogModal('upload')}>
@@ -60,7 +103,39 @@ export default function ModelGuard() {
           {/* Left Panel: Grounding Metrics & AI Summary */}
           <div className="guard-panel reveal-up in-view">
             <div className="guard-summary-box">
-              <div className="guard-summary-kicker">EXECUTIVE INCIDENT SUMMARY</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <div className="guard-summary-kicker">EXECUTIVE INCIDENT SUMMARY</div>
+                <button
+                  type="button"
+                  onClick={handleSaveSummaryError}
+                  className="btn sm"
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    borderRadius: '8px',
+                    background: isSummarySaved ? 'rgba(52, 211, 153, 0.15)' : 'rgba(199, 125, 255, 0.18)',
+                    borderColor: isSummarySaved ? '#34D399' : '#C77DFF',
+                    color: isSummarySaved ? '#34D399' : '#C77DFF',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  {isSummarySaved ? (
+                    <>
+                      <Check size={12} />
+                      <span>Saved to Profile</span>
+                    </>
+                  ) : savingId === 'summary_save' ? (
+                    <span>Saving...</span>
+                  ) : (
+                    <>
+                      <Bookmark size={12} />
+                      <span>Save Error to Profile</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <p className="guard-summary-text">{summary}</p>
             </div>
 
@@ -93,7 +168,8 @@ export default function ModelGuard() {
               <div className="guard-metric-top">
                 <span className="label">Facts vs Hypotheses Breakdown</span>
                 <span className="val" style={{ color: 'var(--text)' }}>
-                  {factsCount} Fact{factsCount !== 1 ? 's' : ''} · {hypothesesCount} Hypothes{hypothesesCount !== 1 ? 'es' : 'is'}
+                  {factsCount} Fact{factsCount !== 1 ? 's' : ''} · {hypothesesCount} Hypothes
+                  {hypothesesCount !== 1 ? 'es' : 'is'}
                 </span>
               </div>
               <div className="bar-track">
@@ -130,47 +206,74 @@ export default function ModelGuard() {
             </div>
 
             <div className="root-cause-cards-list">
-              {rootCauses.map((rc, idx) => (
-                <div className="hyp-card" key={idx}>
-                  <div className="hyp-top-bar">
-                    <span className="hyp-label">ROOT CAUSE #{idx + 1}</span>
-                    <span className={`hyp-status ${rc.type === 'fact' ? 'fact' : 'hypothesis'}`}>
-                      {rc.type === 'fact' ? '✓ FACT (VERIFIED)' : '⚡ HYPOTHESIS'}
-                    </span>
-                  </div>
+              {rootCauses.map((rc, idx) => {
+                const targetLogId = rc.evidence_log_ids?.[0] || `rc_${idx + 1}`
+                const isSaved = isErrorSaved(targetLogId, currentSession?.session_id)
+                const isSavingThis = savingId === targetLogId
 
-                  <div className="hyp-text">{rc.cause}</div>
-
-                  <div className="hyp-stats">
-                    <div className="metric">
-                      <span className="label">Confidence</span>
-                      <span className="value" style={{ color: 'var(--ai)' }}>
-                        {Math.round((rc.confidence || 0.8) * 100)}%
-                      </span>
-                    </div>
-                    <div className="metric">
-                      <span className="label">Evidence Log IDs</span>
-                      <span className="value">
-                        {rc.evidence_log_ids?.length > 0 ? rc.evidence_log_ids.join(', ') : 'Inferred from context'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="hyp-reasoning">
-                    <b>LLM Reasoning:</b> {rc.reasoning}
-                  </div>
-
-                  {rc.evidence_log_ids?.length > 0 && (
-                    <div className="evidence-tags-row">
-                      {rc.evidence_log_ids.map((id) => (
-                        <span key={id} className="evidence-tag">
-                          Evidence: {id}
+                return (
+                  <div className="hyp-card" key={idx}>
+                    <div className="hyp-top-bar">
+                      <span className="hyp-label">ROOT CAUSE #{idx + 1}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span className={`hyp-status ${rc.type === 'fact' ? 'fact' : 'hypothesis'}`}>
+                          {rc.type === 'fact' ? '✓ FACT (VERIFIED)' : '⚡ HYPOTHESIS'}
                         </span>
-                      ))}
+                        <button
+                          type="button"
+                          onClick={() => handleSaveRootCause(rc, idx)}
+                          className="btn sm"
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '10px',
+                            borderRadius: '6px',
+                            background: isSaved ? 'rgba(52, 211, 153, 0.15)' : 'rgba(199, 125, 255, 0.15)',
+                            borderColor: isSaved ? '#34D399' : '#C77DFF',
+                            color: isSaved ? '#34D399' : '#C77DFF',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          {isSaved ? <Check size={11} /> : <Bookmark size={11} />}
+                          <span>{isSaved ? 'Saved' : 'Save to Profile'}</span>
+                        </button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    <div className="hyp-text">{rc.cause}</div>
+
+                    <div className="hyp-stats">
+                      <div className="metric">
+                        <span className="label">Confidence</span>
+                        <span className="value" style={{ color: 'var(--ai)' }}>
+                          {Math.round((rc.confidence || 0.8) * 100)}%
+                        </span>
+                      </div>
+                      <div className="metric">
+                        <span className="label">Evidence Log IDs</span>
+                        <span className="value">
+                          {rc.evidence_log_ids?.length > 0 ? rc.evidence_log_ids.join(', ') : 'Inferred from context'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="hyp-reasoning">
+                      <b>LLM Reasoning:</b> {rc.reasoning}
+                    </div>
+
+                    {rc.evidence_log_ids?.length > 0 && (
+                      <div className="evidence-tags-row">
+                        {rc.evidence_log_ids.map((id) => (
+                          <span key={id} className="evidence-tag">
+                            Evidence: {id}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>

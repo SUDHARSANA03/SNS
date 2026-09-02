@@ -4,8 +4,8 @@ const API_BASE = '' // Uses Vite dev proxy to localhost:8000
 
 export async function checkBackendHealth(): Promise<{ ok: boolean; message?: string }> {
   try {
-    const res = await fetch(`${API_BASE}/api/logs/upload`, { method: 'GET' })
-    if (res.status === 405 || res.status === 200) {
+    const res = await fetch(`${API_BASE}/api/health`, { method: 'GET' })
+    if (res.ok) {
       return { ok: true, message: 'FastAPI Backend Connected' }
     }
     return { ok: false }
@@ -14,28 +14,41 @@ export async function checkBackendHealth(): Promise<{ ok: boolean; message?: str
   }
 }
 
-
 export async function uploadLogFile(file: File): Promise<AnalysisResult> {
   const formData = new FormData()
   formData.append('file', file)
 
-  const response = await fetch(`${API_BASE}/api/logs/upload`, {
-    method: 'POST',
-    body: formData,
-  })
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 30000)
 
-  if (!response.ok) {
-    let errorDetail = 'Upload failed'
-    try {
-      const errJson = await response.json()
-      errorDetail = errJson.detail || errorDetail
-    } catch {
-      errorDetail = `HTTP ${response.status}: ${response.statusText}`
+  try {
+    const response = await fetch(`${API_BASE}/api/logs/upload`, {
+      method: 'POST',
+      body: formData,
+      signal: controller.signal,
+    })
+
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      let errorDetail = 'Upload failed'
+      try {
+        const errJson = await response.json()
+        errorDetail = errJson.detail || errorDetail
+      } catch {
+        errorDetail = `HTTP ${response.status}: ${response.statusText}`
+      }
+      throw new Error(errorDetail)
     }
-    throw new Error(errorDetail)
-  }
 
-  return (await response.json()) as AnalysisResult
+    return (await response.json()) as AnalysisResult
+  } catch (err: any) {
+    clearTimeout(timeoutId)
+    if (err.name === 'AbortError') {
+      throw new Error('Backend analysis timed out (30s limit exceeded).')
+    }
+    throw err
+  }
 }
 
 export async function fetchSessionAnalysis(sessionId: string): Promise<AnalysisResult> {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Crosshair, ArrowRight, Activity } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Cpu, Lock, Terminal, BarChart2, ShieldCheck, Eye, Sparkles, Crosshair, ArrowRight, Activity, User } from 'lucide-react';
 import { Footer } from '../../components/common/Footer';
 import { InteractiveBackground } from '../../components/ui/InteractiveBackground';
 import { RobotSection } from '../../components/ui/RobotSection';
@@ -40,6 +41,7 @@ export interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
+  const navigate = useNavigate();
   const headingWord1 = "INCIDENT";
   const headingWord2 = "AI";
 
@@ -60,7 +62,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
     }, 600);
 
     setTimeout(() => {
-      if (onNext) onNext('feed');
+      navigate('/login');
     }, 250);
   };
 
@@ -106,14 +108,22 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 text-xs font-mono text-[#C77DFF]">
             <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse"></span>
             <span>{backendConnected ? 'FastAPI + NVIDIA Active' : 'FastAPI Port 8000'}</span>
           </div>
+
+          <button
+            onClick={() => navigate('/console', { state: { view: 'profile' } })}
+            className="px-4 py-2.5 rounded-xl bg-[#15111F]/90 border border-[#3A2E52] hover:border-[#C77DFF]/60 text-[#E879F9] hover:text-white font-mono font-semibold text-xs tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-[0_0_10px_rgba(199,125,255,0.15)]"
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>PROFILE</span>
+          </button>
           
           <button
-            onClick={() => onNext && onNext('feed')}
+            onClick={() => navigate('/login')}
             className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#C77DFF] via-[#A855F7] to-[#E879F9] text-black font-mono font-black text-xs tracking-wider flex items-center gap-2 shadow-[0_0_20px_rgba(199,125,255,0.35)] hover:shadow-[0_0_30px_rgba(199,125,255,0.6)] transition-all cursor-pointer hover:scale-105 active:scale-95"
           >
             <span>NEXT</span>

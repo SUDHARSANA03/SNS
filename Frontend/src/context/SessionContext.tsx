@@ -81,9 +81,6 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       if (raw) {
         const parsed = JSON.parse(raw) as SessionData[]
         setSessionsHistory(parsed)
-        if (parsed.length > 0) {
-          setCurrentSession(parsed[0])
-        }
       }
     } catch (e) {
       console.error('Failed to load history from localStorage', e)

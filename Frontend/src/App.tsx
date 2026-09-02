@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-
 import TopBar from './components/TopBar'
 import StatusBar from './components/StatusBar'
 import { LandingPage } from './pages/Landing/LandingPage'
+import { LoginPage } from './pages/Auth/LoginPage'
 import LiveFeed from './components/LiveFeed'
 import Detection from './components/Detection'
 import ModelGuard from './components/ModelGuard'
@@ -12,6 +13,7 @@ import ProcessVisualizer from './components/ProcessVisualizer'
 import LogInputModal from './components/LogInputModal'
 import { NAV_ITEMS, ViewId } from './data'
 import { SessionProvider } from './context/SessionContext'
+import { AuthProvider } from './context/AuthContext'
 
 function ConsoleWorkspace() {
   const navigate = useNavigate()
@@ -44,11 +46,11 @@ function ConsoleWorkspace() {
   }
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden min-h-screen flex flex-col relative" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
+    <div style={{ width: '100%', minHeight: '100vh', display: 'flex', flexDirection: 'column', position: 'relative' }}>
       <TopBar activeView={activeView} pillLabel={pillLabel} onSelect={openView} onHome={goHome} />
       <StatusBar />
-      <main className="w-full max-w-full overflow-x-hidden flex-1" style={{ maxWidth: '100vw', overflowX: 'hidden' }}>
-        <div className="accordion view-shell visible w-full max-w-full overflow-x-hidden" id="accordion">
+      <main style={{ flex: 1, position: 'relative', width: '100%' }}>
+        <div className="accordion view-shell visible" id="accordion">
           {NAV_ITEMS.map((item) => (
             <div
               key={item.view}
@@ -82,6 +84,9 @@ function AppContent() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage onNext={handleNext} />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<Navigate to="/login?mode=signup" replace />} />
+      <Route path="/profile" element={<Navigate to="/console" state={{ view: 'profile' }} replace />} />
       <Route path="/console" element={<ConsoleWorkspace />} />
       <Route path="/app" element={<ConsoleWorkspace />} />
       <Route path="*" element={<Navigate to="/" replace />} />
@@ -91,9 +96,11 @@ function AppContent() {
 
 export default function App() {
   return (
-    <SessionProvider>
-      <AppContent />
-    </SessionProvider>
+    <AuthProvider>
+      <SessionProvider>
+        <AppContent />
+      </SessionProvider>
+    </AuthProvider>
   )
 }
 
