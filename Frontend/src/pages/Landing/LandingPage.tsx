@@ -40,9 +40,6 @@ export interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
-  const headingWord1 = "INCIDENT";
-  const headingWord2 = "AI";
-
   const { currentSession, openLogModal, backendConnected, user, openAuthModal, logoutUser } = useSession();
 
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
@@ -62,27 +59,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
     setTimeout(() => {
       if (onNext) onNext('feed');
     }, 250);
-  };
-
-  const letterContainer = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.05,
-        delayChildren: 0.2
-      }
-    }
-  };
-
-  const letterAnimation = {
-    hidden: { opacity: 0, y: 15, filter: 'blur(6px)' },
-    show: {
-      opacity: 1,
-      y: 0,
-      filter: 'blur(0px)',
-      transition: { type: 'spring' as const, stiffness: 90, damping: 12 }
-    }
   };
 
   return (
@@ -126,35 +102,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               </span>
             </motion.div>
 
-            {/* Title - Single Line: INCIDENT AI (Bigger & Bold) */}
+            {/* Title - Single Line: INCIDENT AI (Smooth Cinematic Entry) */}
             <div className="py-1 w-full overflow-visible">
               <motion.h1 
-                variants={letterContainer}
-                initial="hidden"
-                animate="show"
-                className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-none whitespace-nowrap m-0 flex items-center gap-3 sm:gap-4 flex-wrap"
+                initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+                animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                className="text-5xl sm:text-6xl md:text-7xl lg:text-7xl xl:text-8xl font-black tracking-tight leading-none whitespace-nowrap m-0 flex items-center gap-3 sm:gap-4"
               >
                 <span className="animated-title-gradient drop-shadow-[0_0_35px_rgba(245,241,250,0.35)]">
-                  {"INCIDENT".split("").map((char, index) => (
-                    <motion.span 
-                      key={index}
-                      variants={letterAnimation}
-                      className="inline-block relative hover:scale-105 transition-transform duration-200"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  INCIDENT
                 </span>
                 <span className="animated-title-gradient-accent drop-shadow-[0_0_40px_rgba(199,125,255,0.65)]">
-                  {"AI".split("").map((char, index) => (
-                    <motion.span 
-                      key={`ai-${index}`}
-                      variants={letterAnimation}
-                      className="inline-block relative hover:scale-105 transition-transform duration-200"
-                    >
-                      {char}
-                    </motion.span>
-                  ))}
+                  AI
                 </span>
               </motion.h1>
             </div>
