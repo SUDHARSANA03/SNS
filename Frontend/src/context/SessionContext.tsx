@@ -12,11 +12,26 @@ export interface PipelineLogItem {
   type: 'info' | 'success' | 'warn' | 'error'
 }
 
+export interface UserProfile {
+  name: string
+  email: string
+  role: string
+}
+
 interface SessionContextType {
   currentSession: SessionData | null
   sessionsHistory: SessionData[]
   backendConnected: boolean | null
   backendMessage: string
+  // User Auth State
+  user: UserProfile | null
+  loginUser: (userData: UserProfile) => void
+  logoutUser: () => void
+  // Auth Modal State
+  isAuthModalOpen: boolean
+  authModalMode: 'login' | 'signup'
+  openAuthModal: (mode?: 'login' | 'signup') => void
+  closeAuthModal: () => void
   // Interactive Visualizer state
   isVisualizerOpen: boolean
   pipelineStage: PipelineStage
@@ -40,6 +55,7 @@ interface SessionContextType {
 }
 
 const STORAGE_KEY = 'incident_ai_sessions_v1'
+const USER_KEY = 'incident_ai_user_v1'
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined)
 
@@ -48,6 +64,20 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [sessionsHistory, setSessionsHistory] = useState<SessionData[]>([])
   const [backendConnected, setBackendConnected] = useState<boolean | null>(null)
   const [backendMessage, setBackendMessage] = useState('')
+
+  // User auth state
+  const [user, setUser] = useState<UserProfile | null>(() => {
+    try {
+      const saved = localStorage.getItem(USER_KEY)
+      return saved ? JSON.parse(saved) : null
+    } catch {
+      return null
+    }
+  })
+
+  // Auth modal state
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+  const [authModalMode, setAuthModalMode] = useState<'login' | 'signup'>('login')
 
   // Visualizer / Pipeline state
   const [isVisualizerOpen, setIsVisualizerOpen] = useState(false)
@@ -302,6 +332,34 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setCurrentSession(null)
   }, [])
 
+  const loginUser = useCallback((userData: UserProfile) => {
+    setUser(userData)
+    try {
+      localStorage.setItem(USER_KEY, JSON.stringify(userData))
+    } catch (e) {
+      console.error('Failed to save user', e)
+    }
+    setIsAuthModalOpen(false)
+  }, [])
+
+  const logoutUser = useCallback(() => {
+    setUser(null)
+    try {
+      localStorage.removeItem(USER_KEY)
+    } catch (e) {
+      console.error('Failed to remove user', e)
+    }
+  }, [])
+
+  const openAuthModal = useCallback((mode: 'login' | 'signup' = 'login') => {
+    setAuthModalMode(mode)
+    setIsAuthModalOpen(true)
+  }, [])
+
+  const closeAuthModal = useCallback(() => {
+    setIsAuthModalOpen(false)
+  }, [])
+
   return (
     <SessionContext.Provider
       value={{
@@ -309,6 +367,13 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         sessionsHistory,
         backendConnected,
         backendMessage,
+        user,
+        loginUser,
+        logoutUser,
+        isAuthModalOpen,
+        authModalMode,
+        openAuthModal,
+        closeAuthModal,
         isVisualizerOpen,
         pipelineStage,
         pipelineProgress,
