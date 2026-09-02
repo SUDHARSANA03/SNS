@@ -84,14 +84,14 @@ export default function AuthModal() {
             className={`modal-tab ${authModalMode === 'login' ? 'active' : ''}`}
             onClick={() => openAuthModal('login')}
           >
-            🔒 Sign In
+            Sign In
           </button>
           <button
             type="button"
             className={`modal-tab ${authModalMode === 'signup' ? 'active' : ''}`}
             onClick={() => openAuthModal('signup')}
           >
-            ✨ Sign Up (New User)
+            Sign Up (New User)
           </button>
         </div>
 
@@ -135,21 +135,13 @@ export default function AuthModal() {
               </span>
             </div>
 
-            <div className="modal-actions auth-actions">
-              <button
-                type="button"
-                className="btn sm"
-                onClick={handleDemoLogin}
-                title="Quick login for instant testing"
-              >
-                ⚡ Instant Demo Login
-              </button>
+            <div className="modal-actions auth-actions flex justify-end">
               <button
                 type="submit"
-                className="btn primary lg glow"
+                className="btn primary lg glow px-8"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Authenticating...' : 'Sign In →'}
+                {isSubmitting ? 'Authenticating...' : 'OK'}
               </button>
             </div>
           </form>
@@ -221,7 +213,7 @@ export default function AuthModal() {
               </span>
             </div>
 
-            <div className="modal-actions auth-actions">
+            <div className="modal-actions auth-actions flex justify-end gap-3">
               <button
                 type="button"
                 className="btn"
@@ -231,10 +223,10 @@ export default function AuthModal() {
               </button>
               <button
                 type="submit"
-                className="btn primary lg glow"
+                className="btn primary lg glow px-8"
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Creating Account...' : 'Create Account & Enter →'}
+                {isSubmitting ? 'Creating Account...' : 'OK'}
               </button>
             </div>
           </form>
