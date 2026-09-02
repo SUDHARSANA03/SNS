@@ -199,11 +199,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
               <button
                 ref={buttonRef}
                 onClick={(e) => {
-                  if (user) {
-                    handleButtonClick(e)
-                  } else {
-                    openAuthModal('login')
-                  }
+                  handleButtonClick(e);
+                  openAuthModal('login');
                 }}
                 className="group relative px-9 py-4 rounded-2xl bg-gradient-to-r from-[#C77DFF] via-[#A855F7] to-[#E879F9] text-black font-mono font-black tracking-widest text-base flex items-center justify-center gap-3 overflow-hidden shadow-[0_0_25px_rgba(199,125,255,0.4)] border border-[#C77DFF]/50 transition-all duration-300 hover:shadow-[0_0_45px_rgba(199,125,255,0.7)] hover:-translate-y-1 cursor-pointer active:scale-95 select-none"
                 style={{ willChange: 'transform' }}
@@ -225,18 +222,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
                   ))}
                 </AnimatePresence>
 
-                <span className="relative z-10">{user ? 'ENTER CONSOLE' : 'LOG IN / SIGN UP'}</span>
+                <span className="relative z-10">LOG IN / SIGN UP</span>
                 <ArrowRight className="w-5 h-5 text-black group-hover:translate-x-1.5 transition-transform duration-300 stroke-[2.5]" />
-              </button>
-
-              <button
-                onClick={() => onNext && onNext('detect')}
-                className="group relative px-7 py-4 rounded-2xl bg-[#15111F]/80 text-white font-mono font-bold tracking-wider text-sm flex items-center justify-center gap-3 overflow-hidden border border-[#3A2E52] transition-all duration-300 hover:border-[#C77DFF]/60 hover:bg-[#C77DFF]/15 hover:shadow-[0_0_25px_rgba(199,125,255,0.25)] hover:-translate-y-1 cursor-pointer active:scale-95 select-none backdrop-blur-sm"
-                style={{ willChange: 'transform' }}
-              >
-                <Activity className="w-4 h-4 text-[#E879F9] group-hover:scale-110 transition-transform duration-300" />
-                <span className="relative z-10">ANOMALY RADAR</span>
-                <span className="transform transition-transform duration-300 group-hover:translate-x-1.5 font-sans font-bold">→</span>
               </button>
             </motion.div>
 
