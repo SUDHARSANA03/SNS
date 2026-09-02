@@ -49,22 +49,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
   const [isSplit, setIsSplit] = useState(false);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
 
-  const featureStackRef = useRef<HTMLDivElement>(null);
-  const [isFeatureSplit, setIsFeatureSplit] = useState(false);
-  const [selectedFeatureCard, setSelectedFeatureCard] = useState<number | null>(null);
-
   useEffect(() => {
     let ticking = false;
     const updateSplit = () => {
       ticking = false;
-      if (stackRef.current) {
-        const rect = stackRef.current.getBoundingClientRect();
-        setIsSplit(rect.top < window.innerHeight * 0.78);
-      }
-      if (featureStackRef.current) {
-        const rectF = featureStackRef.current.getBoundingClientRect();
-        setIsFeatureSplit(rectF.top < window.innerHeight * 0.78);
-      }
+      if (!stackRef.current) return;
+      const rect = stackRef.current.getBoundingClientRect();
+      setIsSplit(rect.top < window.innerHeight * 0.78);
     };
 
     window.addEventListener('scroll', () => {
@@ -265,7 +256,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       </section>
 
       {/* ═══════════════════════════════════════════════ ROBOT / INTELLIGENCE CORE ═══════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/90 flex flex-col items-center overflow-hidden">
+      <motion.section 
+        initial={{ opacity: 0, y: 40, scale: 0.96 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.25 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="py-16 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/90 flex flex-col items-center overflow-hidden"
+      >
         <div className="max-w-7xl mx-auto w-full flex flex-col items-center text-center space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#C77DFF]/15 border border-[#C77DFF]/40 text-xs text-[#C77DFF] font-mono font-semibold">
             <span className="w-2 h-2 rounded-full bg-[#C77DFF] animate-pulse" />
@@ -281,13 +278,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <RobotSection />
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      {/* ═══════════════════════════════════════════════ FEATURES ═══════════════════════════════════════════════ */}
+      {/* ═══════════════════════════════════════════════ FEATURES (Staggered Pop-Up Scroll Reveal) ═══════════════════════════════════════════════ */}
       <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 border-t border-[#2A2138] bg-[#0A0810]/70">
         <div className="max-w-6xl mx-auto space-y-20">
 
-          <div className="text-center space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center space-y-4"
+          >
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
               Engineered for High-Throughput Log Intelligence
             </h2>
@@ -295,63 +298,84 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             <p className="text-neutral-400 max-w-xl mx-auto text-base font-sans font-light leading-relaxed">
               Stream ingestion, regex log tokenization, heuristic anomaly radar, and NVIDIA Nemotron LLM root-cause synthesis.
             </p>
-          </div>
+          </motion.div>
 
-          {/* RUMMY SHUFFLE & SCROLL SPLIT FAN-OUT FEATURE CARDS */}
-          <div 
-            ref={featureStackRef}
-            className={`feature-card-stack ${isFeatureSplit ? 'cards-split' : ''} ${selectedFeatureCard !== null ? 'has-selection' : ''}`}
+          <motion.div 
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: {
+                  staggerChildren: 0.2,
+                  delayChildren: 0.1,
+                },
+              },
+            }}
+            className="grid grid-cols-1 md:grid-cols-3 gap-8"
           >
             {[
-              { 
-                icon: <Terminal className="w-7 h-7" />, 
-                title: 'Regex Stream Tokenizer', 
-                desc: 'High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.', 
-                rot: '-4deg', 
-                delay: '0s', 
-                view: 'feed' 
+              {
+                title: 'Regex Stream Tokenizer',
+                desc: 'High-speed log parsing with ISO timestamp extraction, component attribution, log level tagging, and multi-line stack trace grouping.',
+                icon: <Terminal className="w-7 h-7" />,
+                link: 'Open Live Feed →',
+                color: '#C77DFF',
+                iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
+                view: 'feed',
               },
-              { 
-                icon: <Cpu className="w-7 h-7" />, 
-                title: 'Heuristic Anomaly Radar', 
-                desc: 'Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.', 
-                rot: '0deg', 
-                delay: '0.15s', 
-                view: 'detect' 
+              {
+                title: 'Heuristic Anomaly Radar',
+                desc: 'Automatic extraction of ERROR, CRITICAL, and FATAL exceptions alongside keyword scanning for timeouts and connection pool drops.',
+                icon: <Cpu className="w-7 h-7" />,
+                link: 'Open Threat Radar →',
+                color: '#E879F9',
+                iconBg: 'bg-[#E879F9]/15 border-[#E879F9]/30 text-[#E879F9]',
+                view: 'detect',
               },
-              { 
-                icon: <ShieldCheck className="w-7 h-7" />, 
-                title: 'NVIDIA AI Synthesis', 
-                desc: 'Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.', 
-                rot: '4deg', 
-                delay: '0.3s', 
-                view: 'guard' 
+              {
+                title: 'NVIDIA AI Synthesis',
+                desc: 'Deep causal reasoning engine classifying facts vs hypotheses, grounded log evidence citations, and step-by-step mitigation plans.',
+                icon: <ShieldCheck className="w-7 h-7" />,
+                link: 'Open Model Guard →',
+                color: '#C77DFF',
+                iconBg: 'bg-[#C77DFF]/15 border-[#C77DFF]/30 text-[#C77DFF]',
+                view: 'guard',
               },
             ].map((f, idx) => (
-              <div 
-                key={idx} 
-                style={{ '--r': f.rot, '--d': f.delay } as React.CSSProperties}
-                className={`feature-card-item p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/95 backdrop-blur-md relative group hover:border-[#C77DFF]/70 shadow-[0_12px_35px_rgba(0,0,0,0.5)] ${selectedFeatureCard === idx ? 'is-selected' : ''}`}
-                onClick={() => {
-                  if (selectedFeatureCard === idx) {
-                    setSelectedFeatureCard(null);
-                    if (onNext) onNext(f.view);
-                  } else {
-                    setSelectedFeatureCard(idx);
-                  }
+              <motion.div 
+                key={idx}
+                variants={{
+                  hidden: { opacity: 0, y: 55, scale: 0.9 },
+                  visible: {
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: {
+                      type: 'spring',
+                      stiffness: 90,
+                      damping: 14,
+                    },
+                  },
                 }}
+                className="p-8 space-y-5 rounded-3xl border border-[#3A2E52]/80 bg-[#15111F]/90 backdrop-blur-md hover:border-[#C77DFF]/60 hover:-translate-y-2 transition-all duration-300 group cursor-pointer shadow-[0_8px_30px_rgba(0,0,0,0.4)] hover:shadow-[0_14px_45px_rgba(199,125,255,0.25)]"
+                onClick={() => onNext && onNext(f.view)}
               >
-                <div className="w-14 h-14 rounded-2xl bg-[#C77DFF]/15 border border-[#C77DFF]/30 flex items-center justify-center text-[#C77DFF] group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]">
+                <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center ${f.iconBg} group-hover:scale-110 transition-transform duration-500 shadow-[0_0_20px_rgba(199,125,255,0.15)]`}>
                   {f.icon}
                 </div>
                 <h3 className="text-xl font-bold text-white font-serif-luxury group-hover:text-[#E879F9] transition-colors duration-300">{f.title}</h3>
-                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">{f.desc}</p>
-                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold">
-                  {selectedFeatureCard === idx ? 'Open module →' : 'Click to inspect →'}
+                <p className="text-sm text-neutral-400 leading-relaxed font-sans font-light">
+                  {f.desc}
+                </p>
+                <div className="text-xs font-mono text-[#C77DFF] pt-1 flex items-center gap-1 font-semibold group-hover:translate-x-1 transition-transform duration-300">
+                  {f.link}
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -359,13 +383,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
       <section className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60 overflow-hidden">
         <div className="max-w-6xl mx-auto space-y-12 relative">
 
-          <div className="text-center space-y-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="text-center space-y-4"
+          >
             <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight font-serif-luxury">
               Autonomous Triage Pipeline
             </h2>
             <div className="w-16 h-[2px] bg-[#E879F9] mx-auto rounded-full shadow-[0_0_10px_#E879F9]" />
             <p className="text-neutral-400 text-base font-sans font-light">Four automated steps from raw log ingest to incident resolution</p>
-          </div>
+          </motion.div>
 
           {/* RUMMY SHUFFLE & SCROLL SPLIT FAN-OUT STACK */}
           <div 
@@ -407,8 +437,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
         </div>
       </section>
 
-      {/* ═══════════════════════════════════════════════ STATS ═══════════════════════════════════════════════ */}
-      <section className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60">
+      {/* ═══════════════════════════════════════════════ STATS (Pop-Up Scroll Reveal) ═══════════════════════════════════════════════ */}
+      <motion.section 
+        initial={{ opacity: 0, y: 50, scale: 0.94 }}
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="py-20 sm:py-24 px-4 sm:px-6 lg:px-8 relative z-10 bg-[#0A0810]/60"
+      >
         <div className="max-w-5xl mx-auto">
           <div className="rounded-3xl p-10 sm:p-14 border border-[#3A2E52]/80 bg-[#15111F]/75 backdrop-blur-md shadow-2xl relative overflow-hidden">
             
@@ -446,7 +482,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNext }) => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Premium Dark Footer */}
       <Footer theme="dark" />
