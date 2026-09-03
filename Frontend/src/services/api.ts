@@ -1,6 +1,6 @@
 import { AnalysisResult, ParsedLogEvent } from '../data'
 
-const API_BASE = '' // Uses Vite dev proxy to localhost:8000
+const API_BASE = (import.meta as any).env?.VITE_API_URL || ''
 
 export async function checkBackendHealth(): Promise<{ ok: boolean; message?: string }> {
   try {

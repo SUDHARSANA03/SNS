@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Frontend Queue API Client for Incident AI.
  * Handles async job submission, polling Redis status, and querying Kafka telemetry.
  */
@@ -46,7 +46,7 @@ export interface QueueTelemetry {
   active_workers: number
 }
 
-const API_BASE = '' // Handled by Vite dev proxy -> http://127.0.0.1:8000
+const API_BASE = (import.meta as any).env?.VITE_API_URL || ''
 
 export async function submitAsyncJob(payload: QueueJobSubmitPayload): Promise<QueueJobResponse> {
   const res = await fetch(`${API_BASE}/api/queue/jobs`, {

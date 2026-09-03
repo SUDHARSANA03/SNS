@@ -1,5 +1,5 @@
-﻿/**
- * Incident Service — handles persistent incident records,
+/**
+ * Incident Service � handles persistent incident records,
  * fetching history, and requesting SRE RCA draft generation.
  * Operates with Supabase cloud when configured and falls back to local storage seamlessly.
  */
@@ -7,7 +7,7 @@ import { IncidentRecord } from '../data'
 import { supabase, isSupabaseConfigured } from './supabaseClient'
 
 const STORAGE_KEY = 'incident_ai_mock_incident_records_v1'
-const API_BASE = '' // Vite dev proxy to backend
+const API_BASE = (import.meta as any).env?.VITE_API_URL || ''
 
 const getMockIncidents = (): IncidentRecord[] => {
   try {
