@@ -9,3 +9,7 @@ Frontend/node_modules/.vite/
 backend/.env
 
 Frontend/.env
+
+Frontend/node_modules
+
+node_modules
