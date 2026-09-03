@@ -5,3 +5,7 @@
 .venv/
 env/
 Frontend/node_modules/.vite/
+
+backend/.env
+
+Frontend/.env
