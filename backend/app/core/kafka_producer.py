@@ -6,6 +6,7 @@ import json
 import logging
 from typing import Optional, Dict, Any
 from app.core.config import settings
+from app.core.kafka_auth import kafka_connection_kwargs
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,12 @@ class KafkaProducerService:
 
     def _is_port_open(self, host: str, port: int) -> bool:
         import socket
+        # A remote managed broker (Redpanda/Confluent/Upstash) is over the public
+        # internet, so give the probe a realistic timeout instead of 100ms.
+        timeout = 0.1 if host in ("localhost", "127.0.0.1") else 3.0
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.settimeout(0.1)
+            sock.settimeout(timeout)
             result = sock.connect_ex((host, port))
             sock.close()
             return result == 0
@@ -32,28 +36,30 @@ class KafkaProducerService:
     def _try_connect(self):
         import time
         self._last_check = time.time()
-        
-        # Fast socket probe: if port is closed, immediately flag offline in 0.1s instead of 60s
+
+        # Fast socket probe: if port is closed, immediately flag offline instead of waiting on a full client timeout
         host, port = settings.KAFKA_BOOTSTRAP_SERVERS.split(":")
         if not self._is_port_open(host, int(port)):
             self._offline = True
             self._producer = None
             return
 
+        is_remote = host not in ("localhost", "127.0.0.1")
         try:
             from kafka import KafkaProducer
             self._producer = KafkaProducer(
-                bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
                 value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
                 key_serializer=lambda k: k.encode("utf-8") if k else None,
                 acks="all",
                 retries=1,
-                request_timeout_ms=500,
+                request_timeout_ms=5000 if is_remote else 500,
                 compression_type="gzip",
+                **kafka_connection_kwargs(),
             )
             self._offline = False
             logger.info(f"[Kafka] Producer connected to {settings.KAFKA_BOOTSTRAP_SERVERS}")
-        except Exception:
+        except Exception as e:
+            logger.error(f"[Kafka] Producer connection failed: {e}")
             self._offline = True
             self._producer = None
 
@@ -78,7 +84,7 @@ class KafkaProducerService:
 
         try:
             future = self._producer.send(target_topic, key=job_id, value=payload)
-            metadata = future.get(timeout=1.5)
+            metadata = future.get(timeout=5)
             logger.info(f"[Kafka] Job {job_id} sent to {metadata.topic} partition {metadata.partition}")
             return True
         except Exception as e:

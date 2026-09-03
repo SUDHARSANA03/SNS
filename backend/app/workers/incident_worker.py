@@ -15,6 +15,7 @@ import asyncio
 import logging
 from datetime import datetime, timezone
 from app.core.config import settings
+from app.core.kafka_auth import kafka_connection_kwargs
 from app.core.redis_client import redis_service
 from app.services.log_parser import parse_log_content
 from app.services.error_detector import detect_errors
@@ -38,21 +39,22 @@ class IncidentWorker:
 
     def _init_kafka(self):
         from kafka import KafkaConsumer, KafkaProducer
+        conn = kafka_connection_kwargs()
         self._consumer = KafkaConsumer(
             settings.KAFKA_TOPIC_JOBS,
-            bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
             group_id=settings.KAFKA_GROUP_ID,
             value_deserializer=lambda m: json.loads(m.decode("utf-8")),
             key_deserializer=lambda k: k.decode("utf-8") if k else None,
             auto_offset_reset="earliest",
             enable_auto_commit=False,
             session_timeout_ms=30000,
+            **conn,
         )
         self._producer = KafkaProducer(
-            bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
             value_serializer=lambda v: json.dumps(v, default=str).encode("utf-8"),
             key_serializer=lambda k: k.encode("utf-8") if k else None,
             acks="all",
+            **conn,
         )
         logger.info(f"Connected to Kafka broker: {settings.KAFKA_BOOTSTRAP_SERVERS}")
 
