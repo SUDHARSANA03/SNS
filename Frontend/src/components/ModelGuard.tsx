@@ -1,12 +1,14 @@
 import React, { useState } from 'react'
 import { useSession } from '../context/SessionContext'
 import { useAuth } from '../context/AuthContext'
-import { Bookmark, Check, ShieldAlert } from 'lucide-react'
+import { Bookmark, Check, ShieldAlert, FileText } from 'lucide-react'
+import RCADraftModal from './RCADraftModal'
 
 export default function ModelGuard() {
   const { currentSession, openLogModal } = useSession()
   const { saveError, isErrorSaved } = useAuth()
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [isRcaModalOpen, setIsRcaModalOpen] = useState(false)
 
   const analysis = currentSession?.analysis
   const rootCauses = analysis?.root_cause_analysis || []
@@ -105,36 +107,58 @@ export default function ModelGuard() {
             <div className="guard-summary-box">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                 <div className="guard-summary-kicker">EXECUTIVE INCIDENT SUMMARY</div>
-                <button
-                  type="button"
-                  onClick={handleSaveSummaryError}
-                  className="btn sm"
-                  style={{
-                    padding: '4px 10px',
-                    fontSize: '11px',
-                    borderRadius: '8px',
-                    background: isSummarySaved ? 'rgba(52, 211, 153, 0.15)' : 'rgba(199, 125, 255, 0.18)',
-                    borderColor: isSummarySaved ? '#34D399' : '#C77DFF',
-                    color: isSummarySaved ? '#34D399' : '#C77DFF',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                  }}
-                >
-                  {isSummarySaved ? (
-                    <>
-                      <Check size={12} />
-                      <span>Saved to Profile</span>
-                    </>
-                  ) : savingId === 'summary_save' ? (
-                    <span>Saving...</span>
-                  ) : (
-                    <>
-                      <Bookmark size={12} />
-                      <span>Save Error to Profile</span>
-                    </>
-                  )}
-                </button>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setIsRcaModalOpen(true)}
+                    className="btn sm primary glow"
+                    style={{
+                      padding: '4px 12px',
+                      fontSize: '11px',
+                      borderRadius: '8px',
+                      background: 'linear-gradient(90deg, #C77DFF, #9D4EDD)',
+                      color: '#000',
+                      fontWeight: 700,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    <FileText size={12} />
+                    <span>Generate RCA Draft</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveSummaryError}
+                    className="btn sm"
+                    style={{
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      borderRadius: '8px',
+                      background: isSummarySaved ? 'rgba(52, 211, 153, 0.15)' : 'rgba(199, 125, 255, 0.18)',
+                      borderColor: isSummarySaved ? '#34D399' : '#C77DFF',
+                      color: isSummarySaved ? '#34D399' : '#C77DFF',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                    }}
+                  >
+                    {isSummarySaved ? (
+                      <>
+                        <Check size={12} />
+                        <span>Saved to Profile</span>
+                      </>
+                    ) : savingId === 'summary_save' ? (
+                      <span>Saving...</span>
+                    ) : (
+                      <>
+                        <Bookmark size={12} />
+                        <span>Save Error to Profile</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
               <p className="guard-summary-text">{summary}</p>
             </div>
@@ -278,6 +302,12 @@ export default function ModelGuard() {
           </div>
         </div>
       )}
+
+      {/* Persistent Incident Record & RCA Draft Modal */}
+      <RCADraftModal
+        isOpen={isRcaModalOpen}
+        onClose={() => setIsRcaModalOpen(false)}
+      />
     </section>
   )
 }

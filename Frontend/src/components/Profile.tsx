@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSession } from '../context/SessionContext'
 import { useAuth } from '../context/AuthContext'
@@ -21,6 +21,11 @@ import {
   RefreshCw,
   LogOut,
 } from 'lucide-react'
+
+import { FileText, AlertOctagon } from 'lucide-react'
+import { IncidentRecord } from '../data'
+import { fetchIncidentRecords, deleteIncidentRecord } from '../services/incidentService'
+import RCADraftModal from './RCADraftModal'
 
 export default function Profile() {
   const navigate = useNavigate()
@@ -45,7 +50,31 @@ export default function Profile() {
   } = useAuth()
 
   const [copiedId, setCopiedId] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'errors' | 'sessions'>('errors')
+  const [activeTab, setActiveTab] = useState<'errors' | 'sessions' | 'incidents'>('incidents')
+  const [incidents, setIncidents] = useState<IncidentRecord[]>([])
+  const [isLoadingIncidents, setIsLoadingIncidents] = useState(false)
+  const [selectedIncidentForRCA, setSelectedIncidentForRCA] = useState<IncidentRecord | null>(null)
+  const [isRcaModalOpen, setIsRcaModalOpen] = useState(false)
+
+  // Load persistent incident records
+  const loadIncidents = async () => {
+    setIsLoadingIncidents(true)
+    try {
+      const records = await fetchIncidentRecords(user?.id)
+      setIncidents(records)
+    } finally {
+      setIsLoadingIncidents(false)
+    }
+  }
+
+  useEffect(() => {
+    loadIncidents()
+  }, [user])
+
+  const handleDeleteIncident = async (id: string) => {
+    await deleteIncidentRecord(id)
+    setIncidents((prev) => prev.filter((i) => i.id !== id))
+  }
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
@@ -341,8 +370,23 @@ export default function Profile() {
             </p>
           </div>
 
-          {/* Tab Switcher: Saved Errors vs Log Sessions */}
-          <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Tab Switcher: Incidents vs Saved Errors vs Log Sessions */}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button
+              onClick={() => setActiveTab('incidents')}
+              className={`filter-chip ${activeTab === 'incidents' ? 'on' : ''}`}
+              style={{
+                fontSize: '12px',
+                padding: '6px 14px',
+                borderColor: activeTab === 'incidents' ? '#34D399' : 'rgba(52, 211, 153, 0.3)',
+                background: activeTab === 'incidents' ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
+                color: activeTab === 'incidents' ? '#34D399' : '#D4C9E2',
+              }}
+            >
+              <FileText size={13} style={{ display: 'inline', marginRight: '4px' }} />
+              Incident Records & RCA ({incidents.length})
+            </button>
+
             <button
               onClick={() => setActiveTab('errors')}
               className={`filter-chip ${activeTab === 'errors' ? 'on' : ''}`}
@@ -372,6 +416,177 @@ export default function Profile() {
             </button>
           </div>
         </div>
+
+        {/* ── TAB 0: PERSISTENT INCIDENT RECORDS & RCA DRAFTS ── */}
+        {activeTab === 'incidents' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <span style={{ fontSize: '13px', color: '#D4C9E2' }}>
+                Persistent Root Cause Analysis records synced with Supabase.
+              </span>
+              <button
+                onClick={() => setIsRcaModalOpen(true)}
+                className="btn sm primary glow"
+                style={{
+                  fontSize: '11px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: 'linear-gradient(90deg, #C77DFF, #9D4EDD)',
+                  color: '#000',
+                  fontWeight: 700,
+                }}
+              >
+                <Sparkles size={12} />
+                <span>Draft New RCA for Session</span>
+              </button>
+            </div>
+
+            {isLoadingIncidents ? (
+              <div style={{ padding: '36px', textAlign: 'center', color: 'var(--text-dim)' }}>
+                Loading persistent incident records...
+              </div>
+            ) : incidents.length === 0 ? (
+              <div
+                style={{
+                  textAlign: 'center',
+                  padding: '40px 20px',
+                  background: '#090710',
+                  borderRadius: '16px',
+                  border: '1px dashed rgba(199, 125, 255, 0.3)',
+                }}
+              >
+                <FileText size={36} color="#A098B5" style={{ margin: '0 auto 12px', opacity: 0.6 }} />
+                <h4 style={{ margin: '0 0 6px', color: '#FFF', fontSize: '16px' }}>
+                  No Persistent Incident Records Yet
+                </h4>
+                <p style={{ margin: '0 0 16px', fontSize: '12px', color: 'var(--text-dim)', maxWidth: '440px', marginLeft: 'auto', marginRight: 'auto' }}>
+                  Open an analyzed log session in <b>Model Guard</b> or click below to generate and persist an official SRE Incident Post-Mortem.
+                </p>
+                <button
+                  onClick={() => setIsRcaModalOpen(true)}
+                  className="btn sm primary glow"
+                  style={{
+                    background: 'linear-gradient(90deg, #C77DFF, #9D4EDD)',
+                    color: '#000',
+                    fontWeight: 700,
+                  }}
+                >
+                  Generate First RCA Draft
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {incidents.map((inc) => (
+                  <div
+                    key={inc.id}
+                    style={{
+                      background: '#090710',
+                      border: '1px solid rgba(199, 125, 255, 0.25)',
+                      borderRadius: '14px',
+                      padding: '16px 20px',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontFamily: 'var(--font-mono)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              background: inc.severity === 'CRITICAL' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(199, 125, 255, 0.2)',
+                              color: inc.severity === 'CRITICAL' ? '#EF4444' : '#C77DFF',
+                              border: inc.severity === 'CRITICAL' ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(199, 125, 255, 0.4)',
+                            }}
+                          >
+                            {inc.severity}
+                          </span>
+
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              fontFamily: 'var(--font-mono)',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              background: 'rgba(52, 211, 153, 0.15)',
+                              color: '#34D399',
+                              border: '1px solid rgba(52, 211, 153, 0.3)',
+                            }}
+                          >
+                            {inc.status}
+                          </span>
+
+                          <span style={{ fontSize: '11px', color: '#A098B5', fontFamily: 'monospace' }}>
+                            {inc.id.slice(0, 14)}
+                          </span>
+                        </div>
+
+                        <h4 style={{ margin: 0, fontSize: '15px', color: '#FFF', fontWeight: 700 }}>
+                          {inc.incident_title}
+                        </h4>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <button
+                          onClick={() => {
+                            if (inc.rca_draft_markdown) {
+                              copyToClipboard(inc.rca_draft_markdown, inc.id)
+                            }
+                          }}
+                          className="btn sm"
+                          title="Copy Full Post-Mortem Markdown"
+                          style={{ padding: '4px 8px', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          {copiedId === inc.id ? <Check size={11} color="#34D399" /> : <Copy size={11} />}
+                          <span>{copiedId === inc.id ? 'Copied' : 'RCA .md'}</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteIncident(inc.id)}
+                          className="btn sm"
+                          title="Delete Record"
+                          style={{ padding: '4px 8px', color: '#F87171', borderColor: 'rgba(239, 68, 68, 0.3)' }}
+                        >
+                          <Trash2 size={11} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p style={{ margin: '0 0 10px', fontSize: '13px', color: '#D4C9E2', lineHeight: '1.5' }}>
+                      {inc.executive_summary}
+                    </p>
+
+                    {inc.root_cause && (
+                      <div
+                        style={{
+                          background: '#120E1E',
+                          padding: '10px 12px',
+                          borderRadius: '8px',
+                          borderLeft: '3px solid #EF4444',
+                          fontSize: '12px',
+                          color: '#FCA5A5',
+                          marginBottom: '10px',
+                        }}
+                      >
+                        <b>Root Cause:</b> {inc.root_cause}
+                      </div>
+                    )}
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#A098B5' }}>
+                      <span>Action Items: <b>{inc.action_items?.length || 0} trackable mitigations</b></span>
+                      <span>Recorded: {new Date(inc.created_at).toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── TAB 1: SAVED ERRORS LIST ── */}
         {activeTab === 'errors' && (
@@ -599,6 +814,12 @@ export default function Profile() {
 
       </div>
 
+      {/* Persistent Incident Record & RCA Modal */}
+      <RCADraftModal
+        isOpen={isRcaModalOpen}
+        onClose={() => setIsRcaModalOpen(false)}
+        onSaved={() => loadIncidents()}
+      />
     </section>
   )
 }

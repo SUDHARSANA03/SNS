@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react'
 import { AnalysisResult, SessionData, formatTime } from '../data'
 import { checkBackendHealth, parseLogContentClient, uploadLogFile, fetchSessionAnalysis } from '../services/api'
+import { submitAsyncJob, pollJobStatus, fetchJobResult } from '../services/queueApi'
 import { SAMPLE_LOGS } from '../data/sampleLogs'
 
 export type PipelineStage = 'idle' | 'uploading' | 'parsing' | 'detecting' | 'llm_reasoning' | 'completed' | 'failed'
@@ -178,16 +179,12 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return
       }
 
-      await new Promise((r) => setTimeout(r, 450))
-
       // Stage 2: Parsing log stream
       setPipelineStage('parsing')
       setPipelineProgress(35)
       addPipelineLog('Initializing regex stream tokenizer and timestamp normalizer...', 'info')
       const parsedLogs = parseLogContentClient(textContent)
       addPipelineLog(`Parsed ${parsedLogs.length} log events across timestamps. Multi-line stack traces grouped.`, 'success')
-
-      await new Promise((r) => setTimeout(r, 500))
 
       // Stage 3: Error Heuristic Detection
       setPipelineStage('detecting')
@@ -196,17 +193,53 @@ export const SessionProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const preliminaryErrors = parsedLogs.filter((l) => l.level === 'ERROR' || l.level === 'CRITICAL' || l.level === 'FATAL')
       addPipelineLog(`Detected ${preliminaryErrors.length} preliminary error signatures in log stream.`, preliminaryErrors.length > 0 ? 'warn' : 'info')
 
-      await new Promise((r) => setTimeout(r, 400))
-
-      // Stage 4: NVIDIA AI Model Analysis
+      // Stage 4: Kafka Queue Dispatch & Worker Ingestion
       setPipelineStage('llm_reasoning')
-      setPipelineProgress(80)
-      addPipelineLog('Dispatching error telemetry and events to NVIDIA Nemotron Ultra LLM engine...', 'info')
-      addPipelineLog('Prompting root cause reasoning, hypothesis grounding, and causal timeline mapping...', 'info')
+      setPipelineProgress(75)
+      addPipelineLog('Dispatching log ingestion job to Apache Kafka [incident-jobs] topic...', 'info')
 
       try {
-        const backendResult = await uploadLogFile(file)
-        addPipelineLog('Received structured JSON analysis from NVIDIA model reasoning pipeline.', 'success')
+        let backendResult: any = null
+
+        // Fast Asynchronous Execution Path
+        try {
+          const queueRes = await submitAsyncJob({
+            job_type: 'log_analysis',
+            content: textContent,
+            file_name: file.name,
+            priority: 2,
+          })
+          addPipelineLog(`Task queued (Job ID: ${queueRes.job_id}). Processing asynchronously...`, 'info')
+
+          // Fast polling with immediate check
+          let attempts = 0
+          while (attempts < 30) {
+            attempts++
+            try {
+              const statusCheck = await pollJobStatus(queueRes.job_id)
+              if (statusCheck.status === 'PROCESSING') {
+                setPipelineProgress(85)
+              } else if (statusCheck.status === 'COMPLETED') {
+                backendResult = await fetchJobResult(queueRes.job_id)
+                addPipelineLog('Job completed successfully!', 'success')
+                break
+              } else if (statusCheck.status === 'DEAD') {
+                throw new Error(statusCheck.error_message || 'Job moved to Dead Letter Queue')
+              }
+            } catch (pollErr: any) {
+              if (pollErr.message && pollErr.message.includes('Dead Letter Queue')) throw pollErr
+            }
+            await new Promise((r) => setTimeout(r, 200))
+          }
+        } catch (queueErr) {
+          backendResult = await uploadLogFile(file)
+        }
+
+        if (!backendResult) {
+          backendResult = await uploadLogFile(file)
+        }
+
+        addPipelineLog('Received structured JSON analysis from reasoning pipeline.', 'success')
 
         // Stage 5: Completion & State consolidation
         setPipelineStage('completed')

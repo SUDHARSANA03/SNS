@@ -1,4 +1,4 @@
-export type ViewId = 'feed' | 'detect' | 'guard' | 'chain' | 'profile'
+export type ViewId = 'feed' | 'detect' | 'guard' | 'chain' | 'profile' | 'queue'
 
 export interface NavItem {
   view: ViewId
@@ -12,6 +12,7 @@ export const NAV_ITEMS: NavItem[] = [
   { view: 'guard', num: '03', label: 'Model Guard' },
   { view: 'chain', num: '04', label: 'Timechain' },
   { view: 'profile', num: '05', label: 'Profile' },
+  { view: 'queue', num: '06', label: 'Queue Engine' },
 ]
 
 export const CARD_DETAILS: [string, string, string][] = [
@@ -74,6 +75,34 @@ export interface SessionData extends AnalysisResult {
   rawContent?: string
   fileName?: string
   createdAt: string
+}
+
+export interface ActionItem {
+  title: string
+  description: string
+  owner?: string
+  status: 'OPEN' | 'IN_PROGRESS' | 'COMPLETED'
+  type: 'IMMEDIATE' | 'PREVENTATIVE' | 'ARCHITECTURAL'
+  command_patch?: string
+}
+
+export interface IncidentRecord {
+  id: string
+  user_id?: string
+  session_id?: string
+  incident_title: string
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR' | 'LOW'
+  status: 'INVESTIGATING' | 'IDENTIFIED' | 'MITIGATED' | 'RESOLVED' | 'CLOSED'
+  executive_summary: string
+  root_cause?: string
+  trigger_event?: string
+  impact_assessment?: string
+  affected_components?: string[]
+  causal_timeline?: any[]
+  action_items?: ActionItem[]
+  rca_draft_markdown?: string
+  created_at: string
+  updated_at?: string
 }
 
 export function pad(n: number) {

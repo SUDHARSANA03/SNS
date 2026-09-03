@@ -92,6 +92,62 @@ CREATE INDEX IF NOT EXISTS idx_saved_errors_level
     ON public.user_saved_errors(error_level);
 
 -- ---------------------------------------------------------------------
+-- TABLE: incident_records
+-- Persistent record of formalized incidents and publication-ready RCA drafts
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.incident_records (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+    session_id TEXT,
+    incident_title TEXT NOT NULL,
+    severity TEXT NOT NULL DEFAULT 'MAJOR', -- CRITICAL, MAJOR, MINOR, LOW
+    status TEXT NOT NULL DEFAULT 'IDENTIFIED', -- INVESTIGATING, IDENTIFIED, MITIGATED, RESOLVED, CLOSED
+    executive_summary TEXT NOT NULL,
+    root_cause TEXT,
+    trigger_event TEXT,
+    impact_assessment TEXT,
+    affected_components TEXT[],
+    causal_timeline JSONB DEFAULT '[]'::jsonb,
+    action_items JSONB DEFAULT '[]'::jsonb,
+    rca_draft_markdown TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS for incident_records
+ALTER TABLE public.incident_records ENABLE ROW LEVEL SECURITY;
+
+-- Incident Records Policies
+CREATE POLICY "Users can view incident records" 
+    ON public.incident_records FOR SELECT 
+    USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Users can insert incident records" 
+    ON public.incident_records FOR INSERT 
+    WITH CHECK (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Users can update own incident records" 
+    ON public.incident_records FOR UPDATE 
+    USING (auth.uid() = user_id OR user_id IS NULL);
+
+CREATE POLICY "Users can delete own incident records" 
+    ON public.incident_records FOR DELETE 
+    USING (auth.uid() = user_id OR user_id IS NULL);
+
+-- Indexes for incident_records
+CREATE INDEX IF NOT EXISTS idx_incident_records_user_id 
+    ON public.incident_records(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_incident_records_created_at 
+    ON public.incident_records(created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_incident_records_severity 
+    ON public.incident_records(severity);
+
+CREATE INDEX IF NOT EXISTS idx_incident_records_status 
+    ON public.incident_records(status);
+
+-- ---------------------------------------------------------------------
 -- AUTOMATIC PROFILE CREATION TRIGGER ON SIGNUP
 -- Automatically creates a row in public.profiles when an auth.user signs up
 -- ---------------------------------------------------------------------

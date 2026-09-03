@@ -9,6 +9,7 @@ import Detection from './components/Detection'
 import ModelGuard from './components/ModelGuard'
 import Timechain from './components/Timechain'
 import Profile from './components/Profile'
+import QueueMonitor from './components/QueueMonitor'
 import ProcessVisualizer from './components/ProcessVisualizer'
 import LogInputModal from './components/LogInputModal'
 import { NAV_ITEMS, ViewId } from './data'
@@ -121,5 +122,7 @@ function ViewFor({ view }: { view: ViewId }) {
       return <Timechain />
     case 'profile':
       return <Profile />
+    case 'queue':
+      return <QueueMonitor />
   }
 }

@@ -10,6 +10,14 @@ class Settings(BaseSettings):
     SUPABASE_ANON_KEY: Optional[str] = None
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
 
+    # Kafka & Redis Queue Configuration
+    KAFKA_BOOTSTRAP_SERVERS: str = "localhost:9092"
+    KAFKA_TOPIC_JOBS: str = "incident-jobs"
+    KAFKA_TOPIC_RESULTS: str = "incident-results"
+    KAFKA_TOPIC_DLQ: str = "incident-dlq"
+    KAFKA_GROUP_ID: str = "incident-ai-workers"
+    REDIS_URL: str = "redis://localhost:6379"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=True,

@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.api import logs, analysis
+from app.api import logs, analysis, queue, incidents
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -19,6 +19,8 @@ app.add_middleware(
 
 app.include_router(logs.router, prefix=f"{settings.API_V1_STR}/logs", tags=["logs"])
 app.include_router(analysis.router, prefix=f"{settings.API_V1_STR}/analysis", tags=["analysis"])
+app.include_router(queue.router, prefix=f"{settings.API_V1_STR}/queue", tags=["queue"])
+app.include_router(incidents.router, prefix=f"{settings.API_V1_STR}/incidents", tags=["incidents"])
 
 @app.get("/")
 def root():
